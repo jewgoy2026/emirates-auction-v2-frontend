@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "official",
+  "account_id": "193587dc312e2f19fde56519a0b920a5",
+  "compatibility_date": "2026-11-04",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "single-page-application"
+  }
+}

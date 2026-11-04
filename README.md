@@ -11,6 +11,19 @@ npm run dev
 
 Open `http://127.0.0.1:3000`.
 
+## Cloudflare Worker
+
+The project is configured as a static Next.js export for the Cloudflare Worker
+named `official` in account `193587dc312e2f19fde56519a0b920a5`.
+
+```bash
+npm run build
+npx wrangler deploy
+```
+
+The expected public URL is `https://official.emiratesauction.workers.dev` when
+the account's `workers.dev` subdomain is configured as `emiratesauction`.
+
 ## Checks
 
 ```bash
