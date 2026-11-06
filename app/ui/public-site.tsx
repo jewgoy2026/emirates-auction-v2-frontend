@@ -51,9 +51,20 @@ export default function PublicSite() {
   const [paymentFor, setPaymentFor] = useState<Invoice | 'funds' | null>(null), [intent, setIntent] = useState<PaymentIntent | null>(null), [qr, setQr] = useState(''), [winnerHidden, setWinnerHidden] = useState(false), [busy, setBusy] = useState(false);
 
   async function loadPublic() {
-    const [categoryData, catalogData, railData] = await Promise.all([
-      api<{items: unknown[]}>('/v1/auction/categories'), api<{items: unknown[]}>('/v1/auction/catalog?limit=2500'), api<{rails: Rail[]}>('/v1/payment/rails'),
-    ]);
+    let categoryData: {items: unknown[]}, catalogData: {items: unknown[]}, railData: {rails: Rail[]};
+    try {
+      [categoryData, catalogData, railData] = await Promise.all([
+        api<{items: unknown[]}>('/v1/auction/categories'), api<{items: unknown[]}>('/v1/auction/catalog?limit=2500'), api<{rails: Rail[]}>('/v1/payment/rails'),
+      ]);
+    } catch {
+      const responses = await Promise.all([
+        fetch('/snapshot/categories.json', { cache: 'no-store' }),
+        fetch('/snapshot/catalog.json', { cache: 'no-store' }),
+        fetch('/snapshot/rails.json', { cache: 'no-store' }),
+      ]);
+      if (responses.some((response) => !response.ok)) throw new Error('Unable to load the marketplace.');
+      [categoryData, catalogData, railData] = await Promise.all(responses.map((response) => response.json())) as [{items: unknown[]}, {items: unknown[]}, {rails: Rail[]}];
+    }
     setCategories(categoryData.items.map(normalizeCategory)); setLots(catalogData.items.map(normalizeLot)); setRails(railData.rails);
   }
   async function loadAccount() { const data = await api('/v1/auction/me'); setAccount(normalizeAccount(data)); }
