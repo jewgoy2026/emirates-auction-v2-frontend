@@ -248,13 +248,18 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   }, [lots]);
   useEffect(() => {
     if (!selectedLot) { setGalleryImages([]); setGalleryIndex(0); setGalleryLoading(false); setVehicleSpecs([]); setSourceDescription(''); return; }
-    const primary = selectedLot.imageUrl ? [selectedLot.imageUrl] : [];
+    const primary = Array.from(new Set([selectedLot.imageUrl, ...selectedLot.mediaUrls].filter(Boolean)));
     setGalleryImages(primary); setGalleryIndex(0);
-    if (!selectedLot.sourceUrl || plateMeta(selectedLot, platePreview)) return;
+    const selectedPlate = plateMeta(selectedLot, platePreview);
+    if (selectedPlate) {
+      const carImages = (platePreview?.makes.flatMap((make) => make.models) ?? []).slice(0,4).map((model) => plateWorkerUrl(model.imageTemplate, selectedPlate, 900, 700));
+      setGalleryImages(Array.from(new Set([plateCardUrl(selectedPlate), ...carImages]))); return;
+    }
+    if (!selectedLot.sourceUrl) return;
     const controller = new AbortController(); setGalleryLoading(true);
     fetch(`/api/v1/public/lot-gallery?source=${encodeURIComponent(selectedLot.sourceUrl)}`, { signal: controller.signal })
       .then((response) => response.ok ? response.json() : { items: [],specifications:[],description:'' })
-      .then((data: { items?: string[]; specifications?: Array<{label:string;value:string}>; description?:string }) => { setGalleryImages(Array.from(new Set([...(data.items ?? []), ...primary])).slice(0,60));setVehicleSpecs(data.specifications??[]);setSourceDescription(data.description??''); })
+      .then((data: { items?: string[]; specifications?: Array<{label:string;value:string}>; description?:string }) => { setGalleryImages(Array.from(new Set([...primary, ...(data.items ?? [])])).slice(0,60));setVehicleSpecs(data.specifications??[]);setSourceDescription(data.description??''); })
       .catch(() => undefined).finally(() => setGalleryLoading(false));
     return () => controller.abort();
   }, [selectedLot, platePreview]);
@@ -467,7 +472,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
       <div className="ea-product-title"><span>{t.lot} # {selectedLot.id.slice(0,8).toUpperCase()}</span><h1>{selectedLot.title}</h1></div>
       <div className="ea-product-layout"><section className="ea-product-main">
         <div className="ea-product-gallery">
-          <div className="ea-product-stage">{selectedDetailPlate ? <PlateVisual plate={selectedDetailPlate} title={selectedLot.title} className="ea-product-plate"/> : galleryImages[galleryIndex] ? <img src={galleryImages[galleryIndex]} alt={`${selectedLot.title} — ${rtl?'صورة':'Photo'} ${galleryIndex+1}`}/> : <span className="ea-product-placeholder"><Icon name={categoryIcon(selectedLot.category)} size={96}/></span>}
+          <div className="ea-product-stage">{selectedDetailPlate && galleryIndex===0 ? <PlateVisual plate={selectedDetailPlate} title={selectedLot.title} className="ea-product-plate"/> : galleryImages[galleryIndex] ? <img src={galleryImages[galleryIndex]} alt={`${selectedLot.title} — ${rtl?'صورة':'Photo'} ${galleryIndex+1}`}/> : <span className="ea-product-placeholder"><Icon name={categoryIcon(selectedLot.category)} size={96}/></span>}
             <Status tone={selectedLot.mode==='direct'?'gold':'green'}>{selectedLot.mode==='direct'?t.directSale:(rtl?'المزاد جارٍ الآن':'Now in auction')}</Status>
             {galleryImages.length>1&&<><button className="ea-gallery-arrow previous" aria-label={rtl?'الصورة السابقة':'Previous image'} onClick={()=>setGalleryIndex((galleryIndex-1+galleryImages.length)%galleryImages.length)}>‹</button><button className="ea-gallery-arrow next" aria-label={rtl?'الصورة التالية':'Next image'} onClick={()=>setGalleryIndex((galleryIndex+1)%galleryImages.length)}>›</button><span className="ea-gallery-counter"><Icon name="grid" size={14}/>{galleryIndex+1} / {galleryImages.length}</span></>}
             {galleryLoading&&<span className="ea-gallery-loading">{rtl?'جارٍ تحميل الصور…':'Loading gallery…'}</span>}
