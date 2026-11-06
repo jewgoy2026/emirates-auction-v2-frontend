@@ -1,0 +1,14 @@
+.policy-note {
+  margin: 14px 0;
+  padding: 13px;
+  border-left: 3px solid #d39b13;
+  background: #fff8e5;
+}
+
+.policy-note strong { font-size: 12px; }
+.policy-note p {
+  margin: 5px 0 0 !important;
+  color: #6e5a20 !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}

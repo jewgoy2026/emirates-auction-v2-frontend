@@ -16,7 +16,13 @@ async function proxy(request: Request, env: Env) {
   try {
     const response = await fetch(upstreamUrl, { method: request.method, headers, body: ['GET','HEAD'].includes(request.method) ? undefined : request.body, redirect: 'manual', signal: AbortSignal.timeout(15_000) }), output = new Headers();
     for (const name of ['content-type','content-length','location','retry-after']) { const value = response.headers.get(name); if (value) output.set(name, value); }
-    output.set('Cache-Control', request.method === 'GET' && response.ok && !requestUrl.pathname.includes('/me') ? 'public, max-age=15' : 'no-store'); output.set('X-Content-Type-Options','nosniff');
+    const publicRead = request.method === 'GET' && response.ok && (
+      requestUrl.pathname === '/api/v1/auction/categories' ||
+      requestUrl.pathname === '/api/v1/auction/catalog' ||
+      requestUrl.pathname.startsWith('/api/v1/auction/lots/') ||
+      requestUrl.pathname === '/api/v1/payment/rails'
+    );
+    output.set('Cache-Control', publicRead ? 'public, max-age=15' : 'no-store'); output.set('X-Content-Type-Options','nosniff');
     const cookies = (response.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie?.() ?? (response.headers.get('set-cookie') ? [response.headers.get('set-cookie')!] : []);
     for (const cookie of cookies) output.append('Set-Cookie', cookie.replace(/Path=\/v1\/auth/gi,'Path=/api/v1/auth'));
     return new Response(response.body, { status: response.status, headers: output });
