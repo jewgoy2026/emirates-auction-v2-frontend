@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import { FormEvent, MouseEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { Account, Category, DirectOrder, Invoice, Lot, PaymentIntent, Rail, User, Withdrawal, aedMinor, api, date, money, normalizeAccount, normalizeCategory, normalizeDirectOrder, normalizeIntent, normalizeLot, normalizeWithdrawal, remaining } from '../../lib/v2';
 
-type IconName = 'account' | 'arrow' | 'bell' | 'bid' | 'calendar' | 'car' | 'clock' | 'close' | 'filter' | 'gavel' | 'grid' | 'heart' | 'menu' | 'money' | 'phone' | 'search' | 'shield' | 'wallet';
+type IconName = 'account' | 'arrow' | 'bell' | 'bid' | 'calendar' | 'car' | 'clock' | 'close' | 'filter' | 'gavel' | 'grid' | 'heart' | 'menu' | 'money' | 'phone' | 'search' | 'shield' | 'sort' | 'wallet';
 function Icon({ name, size = 21 }: { name: IconName; size?: number }) {
   const c = { fill: 'none', stroke: 'currentColor', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, strokeWidth: 1.8 };
   const paths: Record<IconName, ReactNode> = {
@@ -25,6 +25,7 @@ function Icon({ name, size = 21 }: { name: IconName; size?: number }) {
     phone: <><rect x="7" y="2" width="10" height="20" rx="2" {...c}/><path d="M11 18h2" {...c}/></>,
     search: <><circle cx="11" cy="11" r="7" {...c}/><path d="m20 20-4-4" {...c}/></>,
     shield: <><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z" {...c}/><path d="m9 12 2 2 4-4" {...c}/></>,
+    sort: <><path d="M8 6h12M8 12h9M8 18h6" {...c}/><path d="m4 4-2 2 2 2M2 6h4M4 16l2 2-2 2M6 18H2" {...c}/></>,
     wallet: <><path d="M3 6h16a2 2 0 0 1 2 2v11H5a2 2 0 0 1-2-2z" {...c}/><path d="M3 8V5a2 2 0 0 1 2-2h12v3M16 12h5" {...c}/></>,
   };
   return <svg aria-hidden="true" viewBox="0 0 24 24" width={size} height={size}>{paths[name]}</svg>;
@@ -257,7 +258,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   const [platePreview, setPlatePreview] = useState<PlatePreviewSnapshot | null>(null), [plateCarLot, setPlateCarLot] = useState<Lot | null>(null), [plateMakeId, setPlateMakeId] = useState(0), [plateModelId, setPlateModelId] = useState(''), [plateLoading, setPlateLoading] = useState(false), [plateDownloading, setPlateDownloading] = useState(false);
   const [user, setUser] = useState<User | null>(null), [account, setAccount] = useState<Account | null>(null);
   const [loading, setLoading] = useState(true), [notice, setNotice] = useState(''), [error, setError] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All'), [search, setSearch] = useState(''), [visible, setVisible] = useState(24), [now, setNow] = useState(Date.now());
+  const [selectedCategory, setSelectedCategory] = useState('All'), [search, setSearch] = useState(''), [sort, setSort] = useState<'price'|'ending'|'bids'>('price'), [page, setPage] = useState(1), [now, setNow] = useState(Date.now());
   const [authMode, setAuthMode] = useState<'identify' | 'login' | 'register' | null>(null), [accountIdentifier, setAccountIdentifier] = useState(''), [accountOpen, setAccountOpen] = useState(false), [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const [galleryImages, setGalleryImages] = useState<string[]>([]), [galleryIndex, setGalleryIndex] = useState(0), [galleryLoading, setGalleryLoading] = useState(false), [galleryThumbLimit,setGalleryThumbLimit]=useState(48);
   const [vehicleSpecs,setVehicleSpecs]=useState<Array<{label:string;value:string}>>([]), [sourceDescription,setSourceDescription]=useState('');
@@ -356,7 +357,10 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
       (selectedCategory === 'Surplus' && lot.category.includes('General Items')) ||
       (selectedCategory === 'Ending Today' && lot.endsAt > now && lot.endsAt - now <= 86_400_000);
     return categoryMatch && (!search || `${lot.title} ${lot.category}`.toLowerCase().includes(search.toLowerCase()));
-  }).sort((a, b) => b.currentPrice - a.currentPrice || b.bidCount - a.bidCount || a.endsAt - b.endsAt), [lots, now, search, selectedCategory]);
+  }).sort((a, b) => sort==='ending' ? a.endsAt-b.endsAt || b.currentPrice-a.currentPrice : sort==='bids' ? b.bidCount-a.bidCount || b.currentPrice-a.currentPrice : b.currentPrice-a.currentPrice || b.bidCount-a.bidCount || a.endsAt-b.endsAt), [lots, now, search, selectedCategory, sort]);
+  const pageSize=24,pageCount=Math.max(1,Math.ceil(filtered.length/pageSize)),currentPage=Math.min(page,pageCount),pageStart=(currentPage-1)*pageSize,pageLots=filtered.slice(pageStart,pageStart+pageSize);
+  const paginationPages=useMemo(()=>{const first=Math.max(1,Math.min(currentPage-2,pageCount-4)),last=Math.min(pageCount,first+4);return Array.from({length:last-first+1},(_,index)=>first+index);},[currentPage,pageCount]);
+  useEffect(()=>{if(page>pageCount)setPage(pageCount);},[page,pageCount]);
   const imageLots = useMemo(() => lots.filter((lot) => lot.imageUrl), [lots]);
   const endingCount = useMemo(() => lots.filter((lot) => lot.status === 'open' && lot.endsAt > now && lot.endsAt - now < 86_400_000).length, [lots, now]);
   const headerCounts = useMemo(() => ({
@@ -409,7 +413,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
 
   function selectMarketCategory(category: string) {
     if (selectedLot) { window.history.pushState({},'',rtl?'/ar':'/'); setSelectedLot(null); }
-    setSelectedCategory(category); setVisible(24); setSearch(''); setTimeout(() => document.querySelector('#lots')?.scrollIntoView({ behavior: 'smooth' }),0);
+    setSelectedCategory(category); setPage(1); setSearch(''); setTimeout(() => document.querySelector('#lots')?.scrollIntoView({ behavior: 'smooth' }),0);
   }
   function openLot(lot: Lot) { setSelectedLot(lot); setGalleryIndex(0); setError(''); window.history.pushState({ lotId: lot.id },'',`/lots/${lot.id}`); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   function closeLot() { setSelectedLot(null); setGalleryImages([]); setError(''); window.history.pushState({},'',rtl?'/ar':'/'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -521,9 +525,10 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
         <a href={rtl?'/ar':'/'} className="ea-brand" aria-label={t.emiratesAuction} onClick={(event)=>{event.preventDefault();closeLot();}}><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/></a>
         <div className="ea-header-actions">
           <button className="ea-icon-button" onClick={() => setSearchOpen((value) => !value)} aria-label={t.search}><Icon name="search" size={25}/></button>
-          <button className="ea-icon-button" onClick={() => selectMarketCategory('All')} aria-label={t.featured}><Icon name="wallet" size={24}/></button>
-          <button className="ea-icon-button" onClick={() => selectMarketCategory('All')} aria-label={t.liveMarketplace}><Icon name="gavel" size={24}/></button>
-          <button className="ea-icon-button" onClick={openAccount} aria-label={user ? t.profile : t.signIn}><Icon name="account" size={24}/>{user && <span className="ea-user-dot"/>}</button>
+          <button className="ea-icon-button ea-desktop-action" onClick={() => selectMarketCategory('All')} aria-label={t.featured}><Icon name="wallet" size={24}/></button>
+          <button className="ea-icon-button ea-desktop-action" onClick={() => selectMarketCategory('All')} aria-label={t.liveMarketplace}><Icon name="gavel" size={24}/></button>
+          <button className="ea-icon-button ea-account-action" onClick={openAccount} aria-label={user ? t.profile : t.signIn}><Icon name="account" size={24}/>{user && <span className="ea-user-dot"/>}</button>
+          <button className="ea-mobile-login" onClick={openAccount}>{user?t.profile:t.signIn}</button>
           <button className="ea-icon-button ea-menu-button" onClick={() => setMenuOpen(true)} aria-label={t.auctionCategories}><Icon name="menu" size={25}/><span/></button>
         </div>
       </div>
@@ -540,7 +545,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
 
     {menuOpen && <div className="ea-drawer-layer" onMouseDown={(event) => event.currentTarget === event.target && setMenuOpen(false)}><aside className="ea-drawer" aria-label={t.auctionCategories}>
       <div className="ea-drawer-head"><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/><button onClick={() => setMenuOpen(false)} aria-label={rtl?'إغلاق':'Close'}><Icon name="close"/></button></div>
-      <div className="ea-drawer-content"><section><h2>{t.auctionCategories}</h2>{homeCategories.map((category) => <button key={category.key} onClick={() => { setSelectedCategory(category.targetCategory); setMenuOpen(false); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}><span><Icon name={categoryIcon(category.targetCategory)} size={19}/>{rtl ? category.titleAr : category.titleEn}</span><b>{category.count || ''}</b></button>)}</section>
+      <div className="ea-drawer-content"><section><h2>{t.auctionCategories}</h2>{homeCategories.map((category) => <button key={category.key} onClick={() => { setSelectedCategory(category.targetCategory); setPage(1); setMenuOpen(false); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}><span><Icon name={categoryIcon(category.targetCategory)} size={19}/>{rtl ? category.titleAr : category.titleEn}</span><b>{category.count || ''}</b></button>)}</section>
       <section><h2>{t.emiratesAuction}</h2>{[[t.about,'#about'],[t.calendar,'#story'],[t.sell,'#sell'],[t.help,'#faq'],[t.findUs,'#contact'],[t.contact,'#contact']].map(([label,href]) => <a key={label} href={href} onClick={() => setMenuOpen(false)}><span>{label}</span><Icon name="arrow" size={18}/></a>)}</section>
       <section className="ea-language"><h2>{t.language}</h2><a href={rtl ? '/' : '/ar'}>{rtl ? 'English' : 'العربية'} <Icon name="arrow" size={18}/></a></section></div>
     </aside></div>}
@@ -559,7 +564,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
           const mode = category.mode === 'direct' ? t.directSale : category.mode === 'request' ? t.request : category.mode === 'notify' ? t.notify : t.onlineBidding;
           const action = category.mode === 'direct' ? t.buyNow : category.mode === 'request' ? (category.titleEn.toLowerCase().includes('package') ? t.requestPackage : t.requestPlate) : category.mode === 'notify' ? t.notify : t.onlineBidding;
           const title = rtl ? category.titleAr : category.titleEn;
-          return <button key={category.key} className={`ea-category-tile ${featured ? 'ea-category-featured' : ''} ${withBackground ? 'ea-category-background' : ''}`} style={withBackground && backgroundImage ? {backgroundImage:`linear-gradient(180deg,rgba(9,10,11,.04),rgba(9,10,11,.68)),url(${backgroundImage})`} : undefined} onClick={() => { setSelectedCategory(category.targetCategory); setVisible(24); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}>
+          return <button key={category.key} className={`ea-category-tile ${featured ? 'ea-category-featured' : ''} ${withBackground ? 'ea-category-background' : ''}`} style={withBackground && backgroundImage ? {backgroundImage:`linear-gradient(180deg,rgba(9,10,11,.04),rgba(9,10,11,.68)),url(${backgroundImage})`} : undefined} onClick={() => { setSelectedCategory(category.targetCategory); setPage(1); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}>
             {!!category.count && <span className="ea-count-badge">{category.count}</span>}
             {!withBackground && <span className="ea-category-art">{tileImage ? <img src={tileImage} alt={title} loading="lazy"/> : <Icon name={categoryIcon(category.targetCategory)} size={52}/>}</span>}
             <span className="ea-category-copy" style={withBackground ? {color:'#fff'} : {color:category.mainTextColor}}><strong>{title}</strong><small style={withBackground ? {color:'#eee'} : {color:category.secondaryTextColor}}>{mode}</small></span>
@@ -569,14 +574,18 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
         </div></div>
       </div></section>
 
-      <section className="ea-market" id="lots"><div className="ea-content-wrap">
-        <div className="ea-section-head"><div><span>{t.liveMarketplace}</span><h2>{marketTitle}</h2><p>{filtered.length.toLocaleString(rtl?'ar-AE':'en-AE')} {t.lotsAvailable}</p></div><div className="ea-market-tools"><label><Icon name="search" size={18}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t.search}/></label><select value={selectedCategory} onChange={(event) => { setSelectedCategory(event.target.value); setVisible(24); }}><option value="All">{t.allCategories}</option><option value="Plate Numbers">{rtl?'الأرقام المميزة':'Prestigious Numbers'}</option><option value="Surplus">{rtl?'الفائض':'Surplus'}</option><option value="Ending Today">{t.endingToday}</option>{categories.map((category)=><option key={category.id} value={category.title}>{localizedCategory(category.title,language)}</option>)}</select></div></div>
+      <section className={`ea-market ${selectedCategory!=='All'?'ea-market-selected':''}`} id="lots"><div className="ea-content-wrap">
+        <div className="ea-section-head"><div><span>{t.liveMarketplace}</span><h2>{marketTitle}</h2><p>{filtered.length.toLocaleString(rtl?'ar-AE':'en-AE')} {t.lotsAvailable}</p></div><div className="ea-market-tools">
+          <label className="ea-market-search"><Icon name="search" size={18}/><input value={search} onChange={(event) => {setSearch(event.target.value);setPage(1);}} placeholder={t.search}/></label>
+          <label className="ea-tool-select ea-filter-select" aria-label={rtl?'تصفية الفئة':'Filter category'}><Icon name="filter" size={19}/><select value={selectedCategory} onChange={(event) => { setSelectedCategory(event.target.value); setPage(1); }}><option value="All">{t.allCategories}</option><option value="Plate Numbers">{rtl?'الأرقام المميزة':'Prestigious Numbers'}</option><option value="Surplus">{rtl?'الفائض':'Surplus'}</option><option value="Ending Today">{t.endingToday}</option>{categories.map((category)=><option key={category.id} value={category.title}>{localizedCategory(category.title,language)}</option>)}</select></label>
+          <label className="ea-tool-select ea-sort-select" aria-label={rtl?'ترتيب النتائج':'Sort results'}><Icon name="sort" size={19}/><select value={sort} onChange={(event)=>{setSort(event.target.value as typeof sort);setPage(1);}}><option value="price">{rtl?'الأعلى سعراً':'Highest price'}</option><option value="ending">{rtl?'ينتهي قريباً':'Ending soon'}</option><option value="bids">{rtl?'الأكثر مزايدة':'Most bids'}</option></select></label>
+        </div></div>
         {error && <div className="alert alert-error">{error}<button onClick={() => setError('')}><Icon name="close" size={17}/></button></div>}
-        {!loading && !filtered.length ? <Empty text={t.noLots}/> : <div className="ea-lot-grid">{filtered.slice(0,visible).map((lot) => { const plate = plateMeta(lot, platePreview); return <article className={`ea-lot-card ${plate ? 'ea-plate-lot-card' : ''}`} key={lot.id}>
+        {!!filtered.length&&<div className="ea-market-range"><span>{rtl?'عرض':'Showing'} {pageStart+1}–{Math.min(pageStart+pageSize,filtered.length)} {rtl?'من':'of'} {filtered.length.toLocaleString(rtl?'ar-AE':'en-AE')}</span>{pageCount>1&&<nav className="ea-pagination" aria-label={rtl?'ترقيم صفحات المزاد':'Auction pages'}><button disabled={currentPage===1} onClick={()=>{setPage(currentPage-1);document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'});}} aria-label={rtl?'الصفحة السابقة':'Previous page'}><Icon name="arrow" size={16}/></button>{paginationPages.map((item)=><button className={item===currentPage?'active':''} aria-current={item===currentPage?'page':undefined} onClick={()=>{setPage(item);document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'});}} key={item}>{item}</button>)}<span>{rtl?'من':'of'} {pageCount}</span><button disabled={currentPage===pageCount} onClick={()=>{setPage(currentPage+1);document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'});}} aria-label={rtl?'الصفحة التالية':'Next page'}><Icon name="arrow" size={16}/></button></nav>}</div>}
+        {!loading && !filtered.length ? <Empty text={t.noLots}/> : <div className="ea-lot-grid">{pageLots.map((lot) => { const plate = plateMeta(lot, platePreview); return <article className={`ea-lot-card ${plate ? 'ea-plate-lot-card' : ''}`} key={lot.id}>
           <button className="ea-lot-image" onClick={() => openLot(lot)}>{plate ? <PlateVisual plate={plate} title={lot.title}/> : lot.imageUrl ? <img src={lot.imageUrl} alt={lot.title} loading="lazy"/> : <span><Icon name={categoryIcon(lot.category)} size={62}/></span>}{lot.mode === 'auction' && <span className="ea-lot-badge">{lot.bidCount}</span>}<Status tone={lot.mode === 'direct' ? 'gold' : 'red'}>{lot.mode === 'direct' ? t.directSale : t.onlineBidding}</Status></button>
           <div className="ea-lot-body"><span>{localizedCategory(lot.category,language)}</span><h3>{lot.title}</h3>{lot.locationLabel&&<small className="ea-lot-card-location"><Icon name="grid" size={13}/>{lot.locationLabel}</small>}{plate && <button className="ea-view-on-car" onClick={() => openPlatePreview(lot)}><Icon name="car" size={16}/>{rtl?'عرض اللوحة على السيارة':'View on Car'}</button>}<div className="ea-lot-meta"><small>{lot.mode === 'direct' ? t.directSale : `${lot.bidCount} ${t.bids}`}</small><small>{t.lot} {lot.id.slice(0,8).toUpperCase()}</small></div><div className="ea-lot-price"><div><small>{lot.mode === 'direct' ? t.price : t.currentBid}</small><strong>{money(lot.currentPrice)}</strong></div>{lot.mode === 'auction' && lot.endsAt > now && <div className="timer"><Icon name="clock" size={16}/><span>{remaining(lot.endsAt,now)}</span></div>}</div><button className="ea-lot-primary" onClick={() => openLot(lot)}>{lot.mode === 'direct' ? t.buyNow : t.bidNow}<Icon name="arrow" size={17}/></button></div>
         </article>; })}</div>}
-        {visible < filtered.length && <div className="load-more"><button className="outline-button" onClick={() => setVisible((value) => value + 24)}>{t.loadMore}</button></div>}
       </div></section>
 
       <section className="ea-records" id="about"><div className="ea-content-wrap"><div className="ea-title-block"><span>{t.recordsEyebrow}</span><h2>{t.recordsTitle}</h2><p>{t.recordCaption}</p></div><div className="ea-record-track" aria-label={t.recordsTitle}>{achievements.map((achievement,index) => <article key={`${achievement.title}-${achievement.date}-${index}`}>{achievement.imageUrl && <img src={achievement.imageUrl} alt={achievement.title} loading="lazy"/>}<div><b>{String(index+1).padStart(2,'0')}</b><h3>{achievement.title}</h3><span>{achievement.date || t.auctionPrice}</span><strong>{achievement.price}</strong></div></article>)}</div><button className="ea-outline-light">{t.recordsCta}<Icon name="arrow" size={17}/></button></div></section>
