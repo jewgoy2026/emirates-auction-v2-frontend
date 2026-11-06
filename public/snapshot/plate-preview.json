@@ -1,35 +1,45 @@
 {
-  "generatedAt": "2026-11-06T16:15:33.487Z",
+  "generatedAt": "2026-11-06T17:52:36.027Z",
   "source": "https://apiv8.emiratesauction.net/api",
   "formats": [
     {
       "category": "Sharjah Plates",
       "auctionTypeId": 23,
       "suffix": "shjl25",
+      "shortSuffix": "shjs25",
+      "cardSize": 300,
       "plateType": 0
     },
     {
       "category": "Ajman Plates",
       "auctionTypeId": 27,
       "suffix": "ajmnl",
+      "shortSuffix": "ajmns",
+      "cardSize": 301,
       "plateType": 0
     },
     {
       "category": "RAK Plates",
       "auctionTypeId": 16,
       "suffix": "raknl",
+      "shortSuffix": "rakns",
+      "cardSize": 301,
       "plateType": 0
     },
     {
       "category": "UAQ Plates",
       "auctionTypeId": 18,
       "suffix": "umqnl26",
+      "shortSuffix": "umqns26",
+      "cardSize": 300,
       "plateType": 0
     },
     {
       "category": "Fujairah Plates",
       "auctionTypeId": 12,
       "suffix": "fujnl",
+      "shortSuffix": "fujns",
+      "cardSize": 300,
       "plateType": 0
     }
   ],

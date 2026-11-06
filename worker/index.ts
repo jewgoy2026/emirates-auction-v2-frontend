@@ -25,6 +25,70 @@ async function platePreview(request: Request) {
     return new Response(request.method === 'HEAD' ? null : response.body, { status: 200, headers });
   } catch { return json('Plate preview is temporarily unavailable.', 503); }
 }
+async function plateImage(request: Request) {
+  if (!['GET','HEAD'].includes(request.method)) return json('Method not allowed.', 405);
+  const input = new URL(request.url), auctionTypeId = input.searchParams.get('auctionTypeId') ?? '';
+  const plateNumber = input.searchParams.get('plateno') ?? '', code = input.searchParams.get('code') ?? '';
+  const formats: Record<string, { suffix: string; size: number }> = {
+    '12': { suffix: 'fujns', size: 300 }, '16': { suffix: 'rakns', size: 301 }, '18': { suffix: 'umqns26', size: 300 },
+    '23': { suffix: 'shjs25', size: 300 }, '27': { suffix: 'ajmns', size: 301 },
+  };
+  const format = formats[auctionTypeId];
+  if (!format || !/^\d{1,12}$/.test(plateNumber) || !/^[A-Za-z0-9-]{1,12}$/.test(code)) return json('Invalid plate image request.', 400);
+  const upstream = `https://cdn.emiratesauction.com/PLATES/${format.suffix}/${format.size}/${encodeURIComponent(code)}/${encodeURIComponent(plateNumber)}.png`;
+  try {
+    const response = await fetch(upstream, { method: request.method, headers: { Accept: 'image/png' }, signal: AbortSignal.timeout(15_000) });
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!response.ok || !contentType.toLowerCase().startsWith('image/')) return json('Plate image is temporarily unavailable.', 502);
+    return new Response(request.method === 'HEAD' ? null : response.body, { status: 200, headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800', 'X-Content-Type-Options': 'nosniff' } });
+  } catch { return json('Plate image is temporarily unavailable.', 503); }
+}
+async function lotGallery(request: Request) {
+  if (request.method !== 'GET') return json('Method not allowed.', 405);
+  const source = new URL(request.url).searchParams.get('source') ?? '';
+  let upstream: URL;
+  try { upstream = new URL(source); } catch { return json('Invalid lot source.', 400); }
+  if (upstream.protocol !== 'https:' || !['www.emiratesauction.com','emiratesauction.com'].includes(upstream.hostname) || !upstream.pathname.startsWith('/auctions/')) return json('Invalid lot source.', 400);
+  try {
+    const response = await fetch(upstream, { headers: { Accept: 'text/html', 'User-Agent': 'EmiratesAuctionV2/1.0' }, signal: AbortSignal.timeout(15_000) });
+    if (!response.ok) return Response.json({ items: [] }, { headers: { 'Cache-Control': 'public, max-age=300' } });
+    const html = await response.text(), items: string[] = [], specifications: Array<{ label: string; value: string }> = [];
+    for (const tag of html.match(/<img\b[^>]*>/gi) ?? []) {
+      const alt = tag.match(/\balt=["']([^"']*)["']/i)?.[1] ?? '';
+      if (!/\bPhoto\s+\d+\b/i.test(alt) || /Thumbnail/i.test(alt)) continue;
+      const raw = tag.match(/\bsrc=["']([^"']+)["']/i)?.[1]?.replaceAll('&amp;','&') ?? '';
+      if (!raw) continue;
+      let image: URL; try { image = new URL(raw, upstream); } catch { continue; }
+      if (image.protocol !== 'https:' || image.hostname !== 'cdn.emiratesauction.com' || !image.pathname.startsWith('/media/') || !/\/images\.(?:jpg|jpeg|png|webp)$/i.test(image.pathname)) continue;
+      const normalized = image.toString().replace(/w_(?:\[w\]|\d+),h_(?:\[h\]|\d+)/i, 'w_1100,h_700');
+      if (!items.includes(normalized)) items.push(normalized);
+      if (items.length >= 60) break;
+    }
+    const galleryStart=html.indexOf('"ViewTypeId":5'), galleryEnd=galleryStart>=0?html.indexOf('"Title":"GALLERY"',galleryStart):-1;
+    if (galleryStart>=0&&galleryEnd>galleryStart) for (const match of html.slice(galleryStart,galleryEnd).matchAll(/"ImageLink":"([^"]+)"/g)) {
+      const raw=match[1]?.replaceAll('\\/','/')??''; let image:URL; try{image=new URL(raw);}catch{continue;}
+      if(image.protocol!=='https:'||image.hostname!=='cdn.emiratesauction.com'||!image.pathname.startsWith('/media/')||!/\/images\.(?:jpg|jpeg|png|webp)$/i.test(image.pathname))continue;
+      const normalized=image.toString().replace(/w_(?:%5Bw%5D|\[w\]|\d+),h_(?:%5Bh%5D|\[h\]|\d+)/i,'w_1100,h_700');if(!items.includes(normalized))items.push(normalized);if(items.length>=60)break;
+    }
+    const decode = (value: string) => { try { return JSON.parse(`"${value.replaceAll('"','\\"')}"`) as string; } catch { return value; } };
+    const decodeHtml = (value: string) => value.replaceAll('&amp;','&').replaceAll('&quot;','"').replaceAll('&#39;',"'").replaceAll('&lt;','<').replaceAll('&gt;','>');
+    const allowedLabels = new Set(['Make','Model','Year','Body Type','Color','Exterior','Doors','Seats','Odometer','Transmission','Keys','Manufactured in']);
+    for (const object of html.match(/\{[^{}]{0,1200}"TagName":"[^"]+"[^{}]{0,1200}\}/g) ?? []) {
+      const label = object.match(/"TagName":"([^"]+)"/)?.[1] ?? '', value = object.match(/"Title":"([^"]+)"/)?.[1] ?? '';
+      const decodedLabel=decode(label), decodedValue=decode(value); if (allowedLabels.has(decodedLabel)&&decodedValue&&!specifications.some((item)=>item.label===decodedLabel)) specifications.push({label:decodedLabel,value:decodedValue});
+    }
+    for (const label of allowedLabels) {
+      if (specifications.some((item)=>item.label===label)) continue;
+      const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const match=html.match(new RegExp(`>${escaped}<\\/span>[\\s\\S]{0,500}?title="([^"]+)"`,'i'));
+      if(match?.[1]) specifications.push({label,value:decodeHtml(match[1])});
+    }
+    const descriptionRaw=html.match(/"DescriptionSeo":"((?:\\.|[^"\\])*)"/)?.[1]??'';
+    const metaDescription=html.match(/<meta\s+name="description"\s+content="([^"]*)"/i)?.[1]??'';
+    const description=decode(descriptionRaw)||decodeHtml(metaDescription);
+    return Response.json({ items, specifications, description }, { headers: { 'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600', 'X-Content-Type-Options': 'nosniff' } });
+  } catch { return Response.json({ items: [], specifications: [], description: '' }, { headers: { 'Cache-Control': 'public, max-age=60' } }); }
+}
 async function proxy(request: Request, env: Env) {
   const requestUrl = new URL(request.url), base = validBase(env.API_BASE_URL); if (!base) return json('The service API is not configured.', 503);
   if (!env.INTERNAL_API_TOKEN || env.INTERNAL_API_TOKEN.length < 48) return json('The service gateway is not configured.', 503);
@@ -36,7 +100,7 @@ async function proxy(request: Request, env: Env) {
   headers.set('origin', env.UPSTREAM_ORIGIN || requestUrl.origin); headers.set('x-forwarded-host', requestUrl.host); headers.set('x-forwarded-proto', requestUrl.protocol.slice(0,-1));
   try {
     const response = await fetch(upstreamUrl, { method: request.method, headers, body: ['GET','HEAD'].includes(request.method) ? undefined : request.body, redirect: 'manual', signal: AbortSignal.timeout(15_000) }), output = new Headers();
-    for (const name of ['content-type','content-length','location','retry-after']) { const value = response.headers.get(name); if (value) output.set(name, value); }
+    for (const name of ['content-type','content-length','content-disposition','location','retry-after']) { const value = response.headers.get(name); if (value) output.set(name, value); }
     const publicRead = request.method === 'GET' && response.ok && (
       requestUrl.pathname === '/api/v1/auction/categories' ||
       requestUrl.pathname === '/api/v1/auction/catalog' ||
@@ -50,7 +114,11 @@ async function proxy(request: Request, env: Env) {
   } catch { return json('The service is temporarily unavailable.', 503); }
 }
 export default { async fetch(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url); if (url.pathname === '/api/v1/public/plate-preview') return platePreview(request); if (url.pathname.startsWith('/api/')) return proxy(request, env);
+  const url = new URL(request.url);
+  if (url.pathname === '/api/v1/public/plate-preview') return platePreview(request);
+  if (url.pathname === '/api/v1/public/plate-image') return plateImage(request);
+  if (url.pathname === '/api/v1/public/lot-gallery') return lotGallery(request);
+  if (url.pathname.startsWith('/api/')) return proxy(request, env);
   const response = await env.ASSETS.fetch(request), headers = new Headers(response.headers); for (const [key,value] of Object.entries(commonHeaders)) headers.set(key,value);
   headers.set('X-Robots-Tag', url.hostname.endsWith('.workers.dev') ? 'noindex, nofollow' : 'index, follow');
   if (/\.(?:js|css|svg|png|jpg|jpeg|webp|woff2)$/.test(url.pathname)) headers.set('Cache-Control','public, max-age=31536000, immutable');

@@ -35,6 +35,8 @@ const [vehicleData, sourceResults] = await Promise.all([
       category: source.category,
       auctionTypeId: source.auctionTypeId,
       suffix: String(sample?.cdnSuffixLongPlate ?? ''),
+      shortSuffix: String(sample?.cdnSuffixShortPlate ?? ''),
+      cardSize: [16, 27].includes(source.auctionTypeId) ? 301 : 300,
       plateType: Number(sample?.PlateType ?? 0),
     };
   })),
