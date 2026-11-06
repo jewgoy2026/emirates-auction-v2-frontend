@@ -56,7 +56,7 @@ async function lotGallery(request: Request) {
     const addImage = (rawValue: string) => {
       const raw=rawValue.replaceAll('\\/','/').replaceAll('&amp;','&'); let image:URL; try{image=new URL(raw,upstream);}catch{return;}
       if(image.protocol!=='https:'||image.hostname!=='cdn.emiratesauction.com'||!image.pathname.startsWith('/media/')||!/\/images\.(?:jpg|jpeg|png|webp)$/i.test(image.pathname))return;
-      const normalized=image.toString().replace(/w_(?:%5Bw%5D|\[w\]|\d+),h_(?:%5Bh%5D|\[h\]|\d+)/i,'w_1100,h_700');if(!items.includes(normalized)&&items.length<60)items.push(normalized);
+      const normalized=image.toString().replace(/w_(?:%5Bw%5D|\[w\]|\d+),h_(?:%5Bh%5D|\[h\]|\d+)/i,'w_1600,h_1200');if(!items.includes(normalized)&&items.length<500)items.push(normalized);
     };
     for (const tag of html.match(/<img\b[^>]*>/gi) ?? []) {
       const alt = tag.match(/\balt=["']([^"']*)["']/i)?.[1] ?? '';
@@ -65,12 +65,12 @@ async function lotGallery(request: Request) {
       if (!raw) continue;
       let image: URL; try { image = new URL(raw, upstream); } catch { continue; }
       if (image.protocol !== 'https:' || image.hostname !== 'cdn.emiratesauction.com' || !image.pathname.startsWith('/media/') || !/\/images\.(?:jpg|jpeg|png|webp)$/i.test(image.pathname)) continue;
-      addImage(image.toString()); if (items.length >= 60) break;
+      addImage(image.toString()); if (items.length >= 500) break;
     }
     const nextData=html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/)?.[1];
     if(nextData) try {
       const root=JSON.parse(nextData) as unknown, visit=(value:unknown,inGallery=false):void=>{
-        if(!value||typeof value!=='object'||items.length>=60)return;
+        if(!value||typeof value!=='object'||items.length>=500)return;
         if(Array.isArray(value)){for(const entry of value)visit(entry,inGallery);return;}
         const object=value as Record<string,unknown>, gallery=inGallery||object.ViewTypeId===5;
         if(gallery&&typeof object.ImageLink==='string')addImage(object.ImageLink);
