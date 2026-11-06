@@ -1,4 +1,4 @@
-interface Env { ASSETS: Fetcher; API_BASE_URL?: string; UPSTREAM_ORIGIN?: string }
+interface Env { ASSETS: Fetcher; API_BASE_URL?: string; UPSTREAM_ORIGIN?: string; INTERNAL_API_TOKEN?: string }
 const commonHeaders: Record<string, string> = {
   'X-Frame-Options': 'DENY', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
@@ -8,10 +8,12 @@ function json(message: string, status: number) { return Response.json({ error: {
 function validBase(value?: string) { if (!value) return null; try { const url = new URL(value); if (url.protocol === 'https:' || (url.protocol === 'http:' && ['127.0.0.1','localhost'].includes(url.hostname))) return url; } catch {} return null; }
 async function proxy(request: Request, env: Env) {
   const requestUrl = new URL(request.url), base = validBase(env.API_BASE_URL); if (!base) return json('The service API is not configured.', 503);
+  if (!env.INTERNAL_API_TOKEN || env.INTERNAL_API_TOKEN.length < 48) return json('The service gateway is not configured.', 503);
   if (!['GET','POST','PUT','PATCH','DELETE','OPTIONS'].includes(request.method)) return json('Method not allowed.', 405);
   if (!['GET','HEAD','OPTIONS'].includes(request.method) && request.headers.get('origin') !== requestUrl.origin) return json('Invalid request origin.', 403);
   const upstreamUrl = new URL(requestUrl.pathname.slice(4) + requestUrl.search, base), headers = new Headers();
   for (const name of ['accept','content-type','cookie','user-agent']) { const value = request.headers.get(name); if (value) headers.set(name, value); }
+  headers.set('x-internal-api-token', env.INTERNAL_API_TOKEN);
   headers.set('origin', env.UPSTREAM_ORIGIN || requestUrl.origin); headers.set('x-forwarded-host', requestUrl.host); headers.set('x-forwarded-proto', requestUrl.protocol.slice(0,-1));
   try {
     const response = await fetch(upstreamUrl, { method: request.method, headers, body: ['GET','HEAD'].includes(request.method) ? undefined : request.body, redirect: 'manual', signal: AbortSignal.timeout(15_000) }), output = new Headers();

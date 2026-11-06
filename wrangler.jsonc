@@ -6,6 +6,11 @@
   "compatibility_date": "2026-11-05",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
+  "keep_vars": true,
+  "vars": {
+    "API_BASE_URL": "https://api-emirates.203-161-52-90.nip.io",
+    "UPSTREAM_ORIGIN": "https://official.emiratesauction.workers.dev"
+  },
   "assets": {
     "directory": "./out",
     "binding": "ASSETS",

@@ -22,7 +22,7 @@ npx wrangler dev --port 3000 \
   --var UPSTREAM_ORIGIN:https://official.emiratesauction.workers.dev
 ```
 
-`API_BASE_URL` must be HTTPS outside localhost. In production it should be the dedicated Cloudflare Tunnel hostname for the isolated VPS API.
+`API_BASE_URL` must be HTTPS outside localhost. Production uses the dedicated TLS reverse-proxy hostname for the isolated VPS API. `INTERNAL_API_TOKEN` is a Worker secret and must match the VPS API configuration; never commit it.
 
 ## Validation
 
