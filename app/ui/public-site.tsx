@@ -70,19 +70,6 @@ export default function PublicSite() {
   async function loadAccount() { const data = await api('/v1/auction/me'); setAccount(normalizeAccount(data)); }
   async function restore() { try { const data = await api<{user: User}>('/v1/auth/me', { retry: false }); setUser(data.user); await loadAccount(); } catch {} }
   useEffect(() => { Promise.all([loadPublic(), restore()]).catch((reason) => setError(reason instanceof Error ? reason.message : 'Unable to load the marketplace.')).finally(() => setLoading(false)); }, []);
-  useEffect(() => {
-    const url = new URL(window.location.href), authResult = url.searchParams.get('auth'), authError = url.searchParams.get('authError');
-    if (authResult === 'uae-pass') setNotice('You are signed in with UAE Pass.');
-    if (authError) {
-      const messages: Record<string, string> = {
-        UAEPASS_CANCELLED: 'UAE Pass sign-in was cancelled.',
-        UAEPASS_LINK_REQUIRED: 'This email already has an account. Continue with email and password.',
-        ACCOUNT_BLOCKED: 'This account is unavailable.',
-      };
-      setError(messages[authError] ?? 'UAE Pass sign-in could not be completed.'); setAuthMode('login');
-    }
-    if (authResult || authError) { url.searchParams.delete('auth'); url.searchParams.delete('authError'); window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`); }
-  }, []);
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 5000); return () => clearTimeout(timer); }, [notice]);
   useEffect(() => { if (!intent?.paymentUri) { setQr(''); return; } QRCode.toDataURL(intent.paymentUri, { width: 260, margin: 1, errorCorrectionLevel: 'M', color: { dark: '#161719', light: '#ffffff' } }).then(setQr).catch(() => setQr('')); }, [intent]);
@@ -99,14 +86,6 @@ export default function PublicSite() {
       : { email: form.get('email'), password: form.get('password') };
       const data = await api<{user: User}>(path, { body }); setUser(data.user); await loadAccount(); setAuthMode(null); setWinnerHidden(false); setNotice(authMode === 'register' ? 'Your account is ready.' : `Welcome back, ${data.user.name}.`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Sign in failed.'); } finally { setBusy(false); }
-  }
-  async function beginUaePass() {
-    setBusy(true); setError('');
-    try {
-      const status = await api<{enabled: boolean}>('/v1/auth/uae-pass/status', { retry: false });
-      if (!status.enabled) throw new Error('UAE Pass is awaiting the official service-provider credentials.');
-      window.location.assign('/api/v1/auth/uae-pass/start');
-    } catch (reason) { setBusy(false); setError(reason instanceof Error ? reason.message : 'UAE Pass sign-in is unavailable.'); }
   }
   async function logout() { await api('/v1/auth/logout', { body: {} }).catch(() => null); setUser(null); setAccount(null); setAccountOpen(false); setNotice('You have signed out.'); }
   function openAccount() { if (!user) setAuthMode('login'); else { setAccountOpen(true); loadAccount().catch((reason) => setError(reason.message)); } }
@@ -173,7 +152,6 @@ export default function PublicSite() {
     {notice && <div className="toast"><Icon name="shield"/>{notice}</div>}
 
     {authMode && <Modal title={authMode === 'login' ? 'Welcome back' : 'Create your account'} close={() => { setAuthMode(null); setError(''); }}><form className="stack-form" onSubmit={submitAuth}>
-      {authMode === 'login' && <><div className="uae-pass-login"><p>UAE Pass makes sign-in fast and easy - Just one click!</p><button type="button" className="uae-pass-button" onClick={beginUaePass} disabled={busy}><img alt="uae pass" width="28" height="28" src="/assets/icons/uaePassLogo.png"/><span>Sign in with UAE Pass</span></button></div><div className="auth-divider"><span>or sign in with</span></div></>}
       {authMode === 'register' && <><label>Full name<input name="name" required minLength={2} autoComplete="name"/></label><label>Mobile number<input name="phone" required minLength={7} placeholder="+971 50 000 0000" autoComplete="tel"/><small>Include your country code. Our team may use this number after adjudication.</small></label></>}
       <label>Email address<input name="email" type="email" required autoComplete="email"/></label><label>Password<input name="password" type="password" required minLength={authMode === 'register' ? 12 : 1} autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}/>{authMode === 'register' && <small>Use at least 12 characters.</small>}</label>
       {error && <div className="alert alert-error">{error}</div>}<button className="black-button" disabled={busy}>{busy ? 'Please wait…' : authMode === 'login' ? 'Sign In' : 'Create Account'}</button><p className="form-switch">{authMode === 'login' ? <>New to Emirates Auction? <button type="button" onClick={() => setAuthMode('register')}>Create an account</button></> : <>Already registered? <button type="button" onClick={() => setAuthMode('login')}>Sign in</button></>}</p>

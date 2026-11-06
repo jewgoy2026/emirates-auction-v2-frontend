@@ -33,5 +33,3 @@ npm run build
 ```
 
 The public flows include catalog/categories, login and phone registration, account wallet/bid/invoice history, variable lot deposits, bidding, add-funds rail selection, invoice payment instructions, winner popup and withdrawals. A live payment instruction is deliberately unavailable until provider credentials are configured on the VPS.
-
-The login modal includes UAE Pass. Until official service-provider credentials are supplied, the button reports that onboarding configuration is pending. Once enabled, the same button starts the OAuth flow through the Worker callback while the `client_secret` remains only on the VPS.
