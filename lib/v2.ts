@@ -1,4 +1,4 @@
-export type User = { id: string; email: string; name: string; phone: string; role: 'admin' | 'bidder' };
+export type User = { id: string; username: string | null; email: string; name: string; phone: string; role: 'admin' | 'bidder' };
 export type Wallet = { balance: number; reserved: number; available: number };
 export type Category = { id: string; slug: string; title: string; defaultMode: 'auction' | 'direct' | 'request' | 'notify'; status: string; displayOrder: number; styleVariant: string; itemCount: number; activeItemCount: number };
 export type Lot = { id: string; title: string; category: string; description: string; imageUrl: string; mode: 'auction' | 'direct'; status: string; startPrice: number; currentPrice: number; increment: number; extensionMinutes: number; fee: number; vatBps: number; depositBps: number; minimumDeposit: number; minimumLimit: number; depositUsage: 'bidding_only' | 'checkout_eligible'; paymentDueHours: number; nonPaymentPenaltyBps: number; lateFeeDaily: number; forfeitDepositOnDefault: boolean; startsAt: number; endsAt: number; winnerId: string | null; round: number; bidCount: number; sourceBidCount: number };
