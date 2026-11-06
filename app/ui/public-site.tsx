@@ -84,7 +84,7 @@ const arabicCategoryNames: Array<[RegExp, string]> = [
   [/rak plates/i, 'لوحات رأس الخيمة'], [/uaq plates/i, 'لوحات أم القيوين'], [/dubai plates/i, 'لوحات دبي'], [/uae plates/i, 'لوحات الإمارات'],
   [/vehicle|car/i, 'المركبات والآليات'], [/propert/i, 'العقارات'], [/plate/i, 'لوحات مميزة'], [/jewell|watch/i, 'ساعات ومجوهرات'],
   [/general items \(dubai police\)/i, 'بضائع متنوعة (شرطة دبي)'], [/general items \(abu dhabi police\)/i, 'بضائع متنوعة (شرطة أبوظبي)'], [/general item/i, 'بضائع متنوعة'],
-  [/rent|space/i, 'مساحات للإيجار'], [/ship|barge/i, 'السفن والبوارج'], [/premium package/i, 'الباقات المميزة'], [/custom/i, 'جمارك دبي'],
+  [/rent|space/i, 'مساحات للإيجار'], [/ships|barges/i, 'السفن والبوارج'], [/premium package/i, 'الباقات المميزة'], [/custom/i, 'جمارك دبي'],
   [/skywards/i, 'عضويات سكاي واردز طيران الإمارات'], [/expo/i, 'إكسبو 2020 دبي'], [/dubai dates/i, 'دبي للرطب'], [/exclusive plots/i, 'أراضٍ حصرية'],
 ];
 function localizedCategory(title: string, language: Language) { return language === 'en' ? title : arabicCategoryNames.find(([pattern]) => pattern.test(title))?.[1] ?? title; }
@@ -218,11 +218,11 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
           <button className="ea-icon-button ea-menu-button" onClick={() => setMenuOpen(true)} aria-label={t.auctionCategories}><Icon name="menu" size={25}/><span/></button>
         </div>
       </div>
-      {searchOpen && <div className="ea-header-search"><label><Icon name="search"/><input id="market-search" autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t.searchPlaceholder}/><button onClick={() => setSearchOpen(false)} aria-label="Close"><Icon name="close"/></button></label></div>}
+      {searchOpen && <div className="ea-header-search"><label><Icon name="search"/><input id="market-search" autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t.searchPlaceholder}/><button onClick={() => setSearchOpen(false)} aria-label={rtl?'إغلاق':'Close'}><Icon name="close"/></button></label></div>}
     </header>
 
     {menuOpen && <div className="ea-drawer-layer" onMouseDown={(event) => event.currentTarget === event.target && setMenuOpen(false)}><aside className="ea-drawer" aria-label={t.auctionCategories}>
-      <div className="ea-drawer-head"><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/><button onClick={() => setMenuOpen(false)} aria-label="Close"><Icon name="close"/></button></div>
+      <div className="ea-drawer-head"><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/><button onClick={() => setMenuOpen(false)} aria-label={rtl?'إغلاق':'Close'}><Icon name="close"/></button></div>
       <div className="ea-drawer-content"><section><h2>{t.auctionCategories}</h2>{categories.map((category) => <button key={category.id} onClick={() => { setSelectedCategory(category.title); setMenuOpen(false); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}><span><Icon name={categoryIcon(category.title)} size={19}/>{localizedCategory(category.title, language)}</span><b>{category.itemCount || ''}</b></button>)}</section>
       <section><h2>{t.emiratesAuction}</h2>{[[t.about,'#about'],[t.calendar,'#story'],[t.sell,'#sell'],[t.help,'#faq'],[t.findUs,'#contact'],[t.contact,'#contact']].map(([label,href]) => <a key={label} href={href} onClick={() => setMenuOpen(false)}><span>{label}</span><Icon name="arrow" size={18}/></a>)}</section>
       <section className="ea-language"><h2>{t.language}</h2><a href={rtl ? '/' : '/ar'}>{rtl ? 'English' : 'العربية'} <Icon name="arrow" size={18}/></a></section></div>
