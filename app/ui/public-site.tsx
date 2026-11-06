@@ -80,7 +80,12 @@ const copy = {
 } as const;
 
 const arabicCategoryNames: Array<[RegExp, string]> = [
-  [/vehicle|car/i, 'المركبات والآليات'], [/property/i, 'العقارات'], [/plate/i, 'لوحات مميزة'], [/jewell|watch/i, 'ساعات ومجوهرات'], [/general item/i, 'بضائع متنوعة'], [/rent|space/i, 'مساحات للإيجار'], [/ship|barge/i, 'السفن والبوارج'], [/package/i, 'الباقات المميزة'], [/custom/i, 'جمارك دبي'],
+  [/abu dhabi plates/i, 'لوحات أبوظبي'], [/sharjah plates/i, 'لوحات الشارقة'], [/ajman plates/i, 'لوحات عجمان'], [/fujairah plates/i, 'لوحات الفجيرة'],
+  [/rak plates/i, 'لوحات رأس الخيمة'], [/uaq plates/i, 'لوحات أم القيوين'], [/dubai plates/i, 'لوحات دبي'], [/uae plates/i, 'لوحات الإمارات'],
+  [/vehicle|car/i, 'المركبات والآليات'], [/propert/i, 'العقارات'], [/plate/i, 'لوحات مميزة'], [/jewell|watch/i, 'ساعات ومجوهرات'],
+  [/general items \(dubai police\)/i, 'بضائع متنوعة (شرطة دبي)'], [/general items \(abu dhabi police\)/i, 'بضائع متنوعة (شرطة أبوظبي)'], [/general item/i, 'بضائع متنوعة'],
+  [/rent|space/i, 'مساحات للإيجار'], [/ship|barge/i, 'السفن والبوارج'], [/premium package/i, 'الباقات المميزة'], [/custom/i, 'جمارك دبي'],
+  [/skywards/i, 'عضويات سكاي واردز طيران الإمارات'], [/expo/i, 'إكسبو 2020 دبي'], [/dubai dates/i, 'دبي للرطب'], [/exclusive plots/i, 'أراضٍ حصرية'],
 ];
 function localizedCategory(title: string, language: Language) { return language === 'en' ? title : arabicCategoryNames.find(([pattern]) => pattern.test(title))?.[1] ?? title; }
 
@@ -218,7 +223,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
 
     {menuOpen && <div className="ea-drawer-layer" onMouseDown={(event) => event.currentTarget === event.target && setMenuOpen(false)}><aside className="ea-drawer" aria-label={t.auctionCategories}>
       <div className="ea-drawer-head"><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/><button onClick={() => setMenuOpen(false)} aria-label="Close"><Icon name="close"/></button></div>
-      <div className="ea-drawer-content"><section><h2>{t.auctionCategories}</h2>{categories.slice(0,12).map((category) => <button key={category.id} onClick={() => { setSelectedCategory(category.title); setMenuOpen(false); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}><span><Icon name={categoryIcon(category.title)} size={19}/>{localizedCategory(category.title, language)}</span><b>{category.itemCount || ''}</b></button>)}</section>
+      <div className="ea-drawer-content"><section><h2>{t.auctionCategories}</h2>{categories.map((category) => <button key={category.id} onClick={() => { setSelectedCategory(category.title); setMenuOpen(false); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}><span><Icon name={categoryIcon(category.title)} size={19}/>{localizedCategory(category.title, language)}</span><b>{category.itemCount || ''}</b></button>)}</section>
       <section><h2>{t.emiratesAuction}</h2>{[[t.about,'#about'],[t.calendar,'#story'],[t.sell,'#sell'],[t.help,'#faq'],[t.findUs,'#contact'],[t.contact,'#contact']].map(([label,href]) => <a key={label} href={href} onClick={() => setMenuOpen(false)}><span>{label}</span><Icon name="arrow" size={18}/></a>)}</section>
       <section className="ea-language"><h2>{t.language}</h2><a href={rtl ? '/' : '/ar'}>{rtl ? 'English' : 'العربية'} <Icon name="arrow" size={18}/></a></section></div>
     </aside></div>}
@@ -227,7 +232,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
       <h1 className="sr-only">{t.homeTitle}</h1>
       <section className="ea-auction-home" id="categories"><div className="ea-home-wrap">
         <a className="ea-ending-card" href="#lots"><div><strong>{t.endingToday}</strong><span>{t.endingDescription}</span></div><div className="ea-ending-meta"><b><Icon name="grid" size={17}/>{endingCount || lots.filter((lot) => lot.status === 'open').length}</b><b><Icon name="clock" size={18}/>{t.endingNow}</b></div></a>
-        {loading ? <div className="ea-mosaic skeleton-grid">{Array.from({length:18},(_,index)=><i key={index}/>)}</div> : <div className="ea-mosaic">{categories.slice(0,20).map((category,index) => {
+        {loading ? <div className="ea-mosaic skeleton-grid">{Array.from({length:18},(_,index)=><i key={index}/>)}</div> : <div className="ea-mosaic">{categories.map((category,index) => {
           const sample = lots.find((lot) => lot.category === category.title && lot.imageUrl), featured = [4,6,13,18].includes(index);
           const mode = category.defaultMode === 'direct' ? t.directSale : category.defaultMode === 'request' ? t.request : category.defaultMode === 'notify' ? t.notify : t.onlineBidding;
           const action = category.defaultMode === 'direct' ? t.buyNow : category.defaultMode === 'request' ? (category.title.toLowerCase().includes('package') ? t.requestPackage : t.requestPlate) : category.defaultMode === 'notify' ? t.notify : t.onlineBidding;
