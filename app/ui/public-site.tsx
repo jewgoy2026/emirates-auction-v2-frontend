@@ -84,7 +84,7 @@ const arabicCategoryNames: Array<[RegExp, string]> = [
   [/rak plates/i, 'لوحات رأس الخيمة'], [/uaq plates/i, 'لوحات أم القيوين'], [/dubai plates/i, 'لوحات دبي'], [/uae plates/i, 'لوحات الإمارات'],
   [/vehicle|car/i, 'المركبات والآليات'], [/propert/i, 'العقارات'], [/plate/i, 'لوحات مميزة'], [/jewell|watch/i, 'ساعات ومجوهرات'],
   [/general items \(dubai police\)/i, 'بضائع متنوعة (شرطة دبي)'], [/general items \(abu dhabi police\)/i, 'بضائع متنوعة (شرطة أبوظبي)'], [/general item/i, 'بضائع متنوعة'],
-  [/rent|space/i, 'مساحات للإيجار'], [/ships|barges/i, 'السفن والبوارج'], [/premium package/i, 'الباقات المميزة'], [/custom/i, 'جمارك دبي'],
+  [/rent|space/i, 'مساحات للإيجار'], [/\b(?:ships|barges)\b/i, 'السفن والبوارج'], [/premium package/i, 'الباقات المميزة'], [/custom/i, 'جمارك دبي'],
   [/skywards/i, 'عضويات سكاي واردز طيران الإمارات'], [/expo/i, 'إكسبو 2020 دبي'], [/dubai dates/i, 'دبي للرطب'], [/exclusive plots/i, 'أراضٍ حصرية'],
 ];
 function localizedCategory(title: string, language: Language) { return language === 'en' ? title : arabicCategoryNames.find(([pattern]) => pattern.test(title))?.[1] ?? title; }
