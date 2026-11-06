@@ -1,0 +1,971 @@
+{
+  "generatedAt": "2026-11-06T16:01:45.445Z",
+  "source": "https://www.emiratesauction.com",
+  "buildId": "5msu-5spcurfxLAPwaNKk",
+  "endingToday": {
+    "count": 309,
+    "minimumEndDate": "2026-11-06T20:00:30"
+  },
+  "banners": [
+    {
+      "type": 2,
+      "order": 1,
+      "url": "https://cdn.dev.arabiansystems.com/cms/c6fe2feddcdc40f5ae063d6a887eb8d3.mp4",
+      "tabletUrl": "https://cdn.dev.arabiansystems.com/cms/b782a60e87374b318ef0a5b188893000.mp4",
+      "mobileUrl": "https://cdn.dev.arabiansystems.com/cms/85f82e61915f4c208f7d27bad08eb87e.mp4",
+      "title": "Proud UAE",
+      "subtitle": "Proud UAE"
+    }
+  ],
+  "categories": [
+    {
+      "key": "1:/plates/abu-dhabi/online",
+      "auctionTypeId": 1,
+      "titleEn": "Abu Dhabi Plates",
+      "titleAr": "لوحات أبوظبي",
+      "targetCategory": "Abu Dhabi Plates",
+      "count": 0,
+      "active": true,
+      "mode": "request",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/da5fe412-9234-422c-a432-547b5a784500/width=304,height=152",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/da5fe412-9234-422c-a432-547b5a784500/width=304,height=152",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/3c8c9a6c-35c8-4b06-b082-d84403975e00/width=1000,height=563",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/8972935f-0b77-4dc2-116d-bb9b056fb000/width=1000,height=563",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/plates/abu-dhabi/online",
+      "classificationId": 1
+    },
+    {
+      "key": "23:/plates/sharjah/buy-now",
+      "auctionTypeId": 23,
+      "titleEn": "Sharjah Plates",
+      "titleAr": "لوحات الشارقة",
+      "targetCategory": "Sharjah Plates",
+      "count": 54,
+      "active": true,
+      "mode": "direct",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/288e2961-13e6-464e-5a58-c69dd6ee8700/width=304,height=152",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/288e2961-13e6-464e-5a58-c69dd6ee8700/width=304,height=152",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/plates/sharjah/buy-now",
+      "classificationId": 3
+    },
+    {
+      "key": "27:/plates/ajman/buy-now",
+      "auctionTypeId": 27,
+      "titleEn": "Ajman Plates",
+      "titleAr": "لوحات عجمان",
+      "targetCategory": "Ajman Plates",
+      "count": 62,
+      "active": true,
+      "mode": "direct",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/b97e8528-49c9-40a8-f7c9-654910786f00/width=304,height=152",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/b97e8528-49c9-40a8-f7c9-654910786f00/width=304,height=152",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/plates/ajman/buy-now",
+      "classificationId": 3
+    },
+    {
+      "key": "16:/plates/rak/buy-now",
+      "auctionTypeId": 16,
+      "titleEn": "RAK Plates",
+      "titleAr": "لوحات رأس الخيمة",
+      "targetCategory": "RAK Plates",
+      "count": 43,
+      "active": true,
+      "mode": "direct",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/5b6a36e1-c7c8-482b-3783-41f0edacac00/width=304,height=152",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/5b6a36e1-c7c8-482b-3783-41f0edacac00/width=304,height=152",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/plates/rak/buy-now",
+      "classificationId": 3
+    },
+    {
+      "key": "18:/plates/uaq/buy-now",
+      "auctionTypeId": 18,
+      "titleEn": "UAQ Plates",
+      "titleAr": "لوحات أم القيوين",
+      "targetCategory": "UAQ Plates",
+      "count": 49,
+      "active": true,
+      "mode": "direct",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/98b14fbb-67c5-4630-2c1e-743384c26000/width=304,height=152",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/2f08dbe4-e9a7-41b0-deea-1dc9312cd800/width=304,height=152",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361ff",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/plates/uaq/buy-now",
+      "classificationId": 3
+    },
+    {
+      "key": "12:/plates/fujairah/online",
+      "auctionTypeId": 12,
+      "titleEn": "Fujairah Plates",
+      "titleAr": "لوحات الفجيرة",
+      "targetCategory": "Fujairah Plates",
+      "count": 120,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/74138e74-b708-4089-05ff-a05c9dd87800/width=304,height=152",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/74138e74-b708-4089-05ff-a05c9dd87800/width=304,height=152",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361ff",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/plates/fujairah/online",
+      "classificationId": 1
+    },
+    {
+      "key": "9:/properties",
+      "auctionTypeId": 9,
+      "titleEn": "Property Auction",
+      "titleAr": "مزاد الإمارات العقاري",
+      "targetCategory": "Properties",
+      "count": 40,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://cdn.emiratesauction.com/media/mswu62qv5hcj6l197whu1vh6hjgkb9y1nvyy0haokxte1kl74/t_,w_874,h_504,wm_0,tr_1/images.png",
+      "imageAr": "https://cdn.emiratesauction.com/media/1rrxx5ub209bgpc21c5pihd4k7zt237ik67ofpzaioukrv3w4j/t_,w_874,h_504,wm_0,tr_1/images.png",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/mswu62qv5hcj6l197whu1vh6hjgkb9y1nvyy0haokxte1kl74/t_,w_874,h_504,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/1rrxx5ub209bgpc21c5pihd4k7zt237ik67ofpzaioukrv3w4j/t_,w_874,h_504,wm_0,tr_1/images.png",
+      "mainTextColor": "#FFFFFF",
+      "secondaryTextColor": "#EDEEF0",
+      "cardSize": "Medium",
+      "cardCategory": "WithBackGround",
+      "navLink": "/properties",
+      "classificationId": 4
+    },
+    {
+      "key": "4:/motors",
+      "auctionTypeId": 4,
+      "titleEn": "Cars Auction",
+      "titleAr": "مزاد المركبات",
+      "targetCategory": "Vehicles & Machinery",
+      "count": 941,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/1dd42e4f-bdc3-438d-b2cb-8c6345eb9800/width=868,height=1040",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/1db806f9-6145-4d4f-c7f4-ac516af6d600/width=868,height=1040",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/dfc51453-2e6d-4f06-6784-a798a0410700/width=868,height=1040",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/359fdbda-731a-43d4-f5c1-2c14e5d22100/width=868,height=1040",
+      "mainTextColor": "#FFFFFF",
+      "secondaryTextColor": "#EDEEF0",
+      "cardSize": "Medium",
+      "cardCategory": "WithBackGround",
+      "navLink": "/motors",
+      "classificationId": 6
+    },
+    {
+      "key": "5:/general-items",
+      "auctionTypeId": 5,
+      "titleEn": "General Items",
+      "titleAr": "بضائع متنوعة",
+      "targetCategory": "General Items",
+      "count": 131,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/8b328592-270a-490c-c2a3-adfe24762b00/width=211,height=216",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/8b328592-270a-490c-c2a3-adfe24762b00/width=211,height=216",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361ff",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/general-items",
+      "classificationId": 5
+    },
+    {
+      "key": "39:/for-rent",
+      "auctionTypeId": 39,
+      "titleEn": "Spaces For Rent",
+      "titleAr": "مساحات للإيجار",
+      "targetCategory": "Spaces For Rent",
+      "count": 13,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "",
+      "imageAr": "",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/988a8758-cba0-43cc-878a-df350aee7200/width=500,height=281",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/988a8758-cba0-43cc-878a-df350aee7200/width=500,height=281",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "WithBackGround",
+      "navLink": "/for-rent",
+      "classificationId": 10
+    },
+    {
+      "key": "40:/jewellery-watches",
+      "auctionTypeId": 40,
+      "titleEn": "Jewellery & Watches",
+      "titleAr": "ساعات ومجوهرات",
+      "targetCategory": "Jewellery & Watches",
+      "count": 53,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://cdn.emiratesauction.com/media/1xs78xoaw0wna88nh89kqzu0d918busgp70neta3bije5ua1za/t_,w_247,h_194,wm_0,tr_1/images.png",
+      "imageAr": "https://cdn.emiratesauction.com/media/1xs78xoaw0wna88nh89kqzu0d918busgp70neta3bije5ua1za/t_,w_247,h_194,wm_0,tr_1/images.png",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/jewellery-watches",
+      "classificationId": 5
+    },
+    {
+      "key": "41:/dxb-general-items",
+      "auctionTypeId": 41,
+      "titleEn": "General Items",
+      "titleAr": "بضائع متنوعة",
+      "targetCategory": "General Items (Dubai Police)",
+      "count": 130,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/cb158717-729b-4cab-228b-abd7b1170d00/width=559,height=192",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/7bd82e70-9934-4778-730b-2cd312a42900/width=559,height=192",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/baxprxyi6uaxzev6xyb3uthoupv3lznpii7brw9cif5nd9tt8/t_,w_70,h_145,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/baxprxyi6uaxzev6xyb3uthoupv3lznpii7brw9cif5nd9tt8/t_,w_70,h_145,wm_0,tr_1/images.png",
+      "mainTextColor": "#FFFFFF",
+      "secondaryTextColor": "#EDEEF0",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/dxb-general-items",
+      "classificationId": 5
+    },
+    {
+      "key": "45:/expo",
+      "auctionTypeId": 45,
+      "titleEn": "Expo 2020 Dubai",
+      "titleAr": "إكسبو 2020 دبي",
+      "targetCategory": "Expo 2020 Dubai",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/3075ff2a-2418-47c5-068f-f01b4a7fa700/width=423,height=432",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/3075ff2a-2418-47c5-068f-f01b4a7fa700/width=423,height=432",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/expo",
+      "classificationId": 5
+    },
+    {
+      "key": "4:/motors?categories=machinery",
+      "auctionTypeId": 4,
+      "titleEn": "Machinery",
+      "titleAr": "معدات وشاحنات",
+      "targetCategory": "Vehicles & Machinery",
+      "count": 941,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/cf4195f7-a673-47f9-f083-e81680655f00/width=207,height=216",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/cf4195f7-a673-47f9-f083-e81680655f00/width=207,height=216",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#ffffffff",
+      "secondaryTextColor": "#edeef0ff",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/motors?categories=machinery",
+      "classificationId": 6
+    },
+    {
+      "key": "11:/etisalat-premium-plans/online",
+      "auctionTypeId": 11,
+      "titleEn": "Premium Packages",
+      "titleAr": "الباقات المميزة",
+      "targetCategory": "Premium Packages",
+      "count": 0,
+      "active": true,
+      "mode": "request",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/fabba385-6af5-4de3-3a28-6284e82d5c00/width=559,height=192",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/d6157d7d-5504-4a2f-b397-de708e7e2000/width=559,height=192",
+      "backgroundImageEn": "",
+      "backgroundImageAr": "",
+      "mainTextColor": "#FFFFFF",
+      "secondaryTextColor": "#EDEEF0",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/etisalat-premium-plans/online",
+      "classificationId": 7
+    },
+    {
+      "key": "48:/difc",
+      "auctionTypeId": 48,
+      "titleEn": "DIFC",
+      "titleAr": "مركز دبي المالي العالمي",
+      "targetCategory": "DIFC",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://cdn.emiratesauction.com/media/2wbv50fd0ss61q6ych1fytrwq47qa38iaylxq00k822quosdw2/t_,w_542,h_205,wm_0,tr_1/images.png",
+      "imageAr": "https://cdn.emiratesauction.com/media/2wbv50fd0ss61q6ych1fytrwq47qa38iaylxq00k822quosdw2/t_,w_542,h_205,wm_0,tr_1/images.png",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/2wbv50fd0ss61q6ych1fytrwq47qa38iaylxq00k822quosdw2/t_,w_542,h_205,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/2wbv50fd0ss61q6ych1fytrwq47qa38iaylxq00k822quosdw2/t_,w_542,h_205,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/difc",
+      "classificationId": 5
+    },
+    {
+      "key": "57:/kezad/online",
+      "auctionTypeId": 57,
+      "titleEn": "Exclusive Plots",
+      "titleAr": "مواقع مميزة",
+      "targetCategory": "Exclusive Plots",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/f4965a63-3f4f-4ea1-671c-cb9f22d82000/width=600,height=300",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/5edafc76-85ee-424b-0bc4-0c186202e700/width=600,height=300",
+      "backgroundImageEn": "",
+      "backgroundImageAr": "",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/kezad/online",
+      "classificationId": 5
+    },
+    {
+      "key": "58:/plates/uae-plates/online",
+      "auctionTypeId": 58,
+      "titleEn": "UAE Plates",
+      "titleAr": "لوحات الإمارات",
+      "targetCategory": "UAE Plates",
+      "count": 0,
+      "active": true,
+      "mode": "request",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/13ac8752-8a10-4e34-5e89-f67b3cdd5400/width=480,height=240",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/f36b3f74-f14a-43bc-f821-3f6a1d8cf900/width=480,height=240",
+      "backgroundImageEn": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "backgroundImageAr": "https://cdn.emiratesauction.com/media/xi0rupce4pghel0vgx5sxdm5xrun3zw8a5g0yu1nct31sn0ua/t_,w_618,h_700,wm_0,tr_1/images.png",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/plates/uae-plates/online",
+      "classificationId": 1
+    },
+    {
+      "key": "59:/dubai-customs",
+      "auctionTypeId": 59,
+      "titleEn": "Dubai Customs",
+      "titleAr": "جمارك دبي",
+      "targetCategory": "Dubai Customs",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/40601ce9-7764-4ada-6cd1-d92838678500/width=1155,height=632",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/cf585137-59ba-4381-e468-5568ad59d500/width=1155,height=632",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/a4a2c925-7d3c-474b-7d4b-c5ffcfb66a00/width=275,height=93",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/a4a2c925-7d3c-474b-7d4b-c5ffcfb66a00/width=275,height=93",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361ff",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/dubai-customs",
+      "classificationId": 5
+    },
+    {
+      "key": "61:/dubai-dates",
+      "auctionTypeId": 61,
+      "titleEn": "Dubai Dates 2026",
+      "titleAr": "دبي للرطب 2026",
+      "targetCategory": "Dubai Dates 2026",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/f7c28841-0b32-46a3-5ba2-89bada68c800/width=1157,height=575",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/b8412a99-1408-46dc-f893-a553cc29ba00/width=1157,height=575",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/b2e93352-89af-48c9-ee86-c6dfc45f5900/width=1157,height=575",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/75a80eee-571e-4ffa-4e30-9026dde9c400/width=1157,height=575",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361ff",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/dubai-dates",
+      "classificationId": 5
+    },
+    {
+      "key": "49:/kezad/private",
+      "auctionTypeId": 49,
+      "titleEn": "Exclusive Plots",
+      "titleAr": "مواقع مميزة",
+      "targetCategory": "Exclusive Plots",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/f4965a63-3f4f-4ea1-671c-cb9f22d82000/width=600,height=300",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/5edafc76-85ee-424b-0bc4-0c186202e700/width=600,height=300",
+      "backgroundImageEn": "",
+      "backgroundImageAr": "",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/kezad/private",
+      "classificationId": 5
+    },
+    {
+      "key": "64:/abudhabi-police",
+      "auctionTypeId": 64,
+      "titleEn": "General Items",
+      "titleAr": "بضائع متنوعة",
+      "targetCategory": "General Items (Abu Dhabi Police)",
+      "count": 10,
+      "active": true,
+      "mode": "auction",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/e40a8042-99ef-4f32-112b-f1947b18d600/width=1200,height=620",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/e40a8042-99ef-4f32-112b-f1947b18d600/width=1200,height=620",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/e40a8042-99ef-4f32-112b-f1947b18d600/width=1200,height=620",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/e40a8042-99ef-4f32-112b-f1947b18d600/width=1200,height=620",
+      "mainTextColor": "#15171aff",
+      "secondaryTextColor": "#495361ff",
+      "cardSize": "Small",
+      "cardCategory": "Plain",
+      "navLink": "/abudhabi-police",
+      "classificationId": 5
+    },
+    {
+      "key": "65:/ships",
+      "auctionTypeId": 65,
+      "titleEn": "Ships & Barges",
+      "titleAr": "السفن والبوارج",
+      "targetCategory": "Ships & Barges",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/d11b9bd0-8a96-4127-985f-986944a0b500/width=1000,height=566",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/d11b9bd0-8a96-4127-985f-986944a0b500/width=1000,height=566",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/01ab7353-8306-42d6-a890-94057e855a00/width=1024,height=1536",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/01ab7353-8306-42d6-a890-94057e855a00/width=1024,height=1536",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Small",
+      "cardCategory": "WithBackGround",
+      "navLink": "/ships",
+      "classificationId": 5
+    },
+    {
+      "key": "63:/emirates-skywards",
+      "auctionTypeId": 63,
+      "titleEn": "Emirates Skywards Memberships",
+      "titleAr": "عضويات سكاي واردز من طيران الإمارات",
+      "targetCategory": "Emirates Skywards Memberships",
+      "count": 0,
+      "active": true,
+      "mode": "notify",
+      "imageEn": "https://www.emiratesauction.com/imagescdn/72091b57-93ec-4049-89a2-7ced06446c00/width=972,height=563 ",
+      "imageAr": "https://www.emiratesauction.com/imagescdn/43036b27-f062-4fcf-123f-78e349c07a00/width=972,height=563",
+      "backgroundImageEn": "https://www.emiratesauction.com/imagescdn/72091b57-93ec-4049-89a2-7ced06446c00/width=972,height=563 ",
+      "backgroundImageAr": "https://www.emiratesauction.com/imagescdn/43036b27-f062-4fcf-123f-78e349c07a00/width=972,height=563",
+      "mainTextColor": "#15171A",
+      "secondaryTextColor": "#495361",
+      "cardSize": "Medium",
+      "cardCategory": "WithBackGround",
+      "navLink": "/emirates-skywards",
+      "classificationId": 14
+    }
+  ],
+  "achievements": [
+    {
+      "title": "Car License Plate",
+      "price": "AED 55 million",
+      "date": "08 Apr 2023",
+      "imageUrl": "https://cdn.emiratesauction.com/media/dtab2g9k8hw0o6vjynvfrf9pwfly9uvo7ratjc7jgobtlbcu4/t_,w_800,h_800,wm_0/images.jpg?ver=100"
+    },
+    {
+      "title": "Real Property Sold at an Online Auction",
+      "price": "AED 700.2 million",
+      "date": "15 Jan 2020",
+      "imageUrl": "https://cdn.emiratesauction.com/media/36katrhoudgggytm1p17a7rep4jskc99mkry8etn6cuzhkiqr7/t_,w_1000,h_1000,wm_0,tr_1/images.jpg?ver=100"
+    },
+    {
+      "title": "Real Property Sold at an Online Auction",
+      "price": "AED 385 million",
+      "date": "19 Oct 2016",
+      "imageUrl": "https://cdn.emiratesauction.com/media/jqdou96lbc2cykaneh3hzmciiyf20h6o1hseecp53xh98e1wy/t_,w_1000,h_1000,wm_0,tr_1/images.jpg?ver=100"
+    },
+    {
+      "title": "HeadWear Sold at Auction",
+      "price": "AED 24 million",
+      "date": "25 Nov 2015",
+      "imageUrl": "https://cdn.emiratesauction.com/media/1vtvyuhjqjimh2xo3m0ujjhsc7dxxlp7jpszy99w314l42r0gf/t_,w_800,h_800,wm_0/images.jpg?ver=100"
+    },
+    {
+      "title": "Saddle Sold at Auction",
+      "price": "AED 2.4 million",
+      "date": "25 Nov 2015",
+      "imageUrl": "https://cdn.emiratesauction.com/media/bsa4c4hlmgql8j199hti3igbfycyylvv1xqxrcvz7ozbsic5/t_,w_800,h_800,wm_0/images.jpg?ver=100"
+    },
+    {
+      "title": "Real Property Sold at an Online Auction",
+      "price": "AED 98.4 million",
+      "date": "22 Jan 2015",
+      "imageUrl": "https://cdn.emiratesauction.com/media/28ad4p9ty6jpr83yfsi6nrg377ju448ihdkrjhrxwtwjxqst7o/t_,w_1000,h_1000,wm_0,tr_1/images.jpg?ver=100"
+    },
+    {
+      "title": "Oil Tanker Sold Via Online Auction",
+      "price": "AED 74.1 million",
+      "date": "21 Jul 2014",
+      "imageUrl": "https://cdn.emiratesauction.com/media/1lf1vbmi1dwap2qy9459pq32kvnludpd09udxzjgjj744ypzvn/t_,w_800,h_800,wm_0/images.jpg?ver=100"
+    },
+    {
+      "title": "Real Property Sold at an Online Auction",
+      "price": "AED 94 million",
+      "date": "19 Feb 2013",
+      "imageUrl": "https://cdn.emiratesauction.com/media/1n7eimma84npudj440x4zxpvlv54udlftoavqs0dg9tv5zlcqh/t_,w_800,h_449,wm_0,tr_1/images.jpg?ver=100"
+    },
+    {
+      "title": "Car License Plate",
+      "price": "AED 52,2 million",
+      "date": "16 Feb 2008",
+      "imageUrl": "https://cdn.emiratesauction.com/media/2au44t85px4syfl6nnwfmz35ftl5ds6d0hp6r8x3mlpg6vvnpf/t_,w_800,h_800,wm_0/images.jpg?ver=100"
+    },
+    {
+      "title": "Car License Plate",
+      "price": "AED 25.2 million",
+      "date": "12 May 2007",
+      "imageUrl": "https://cdn.emiratesauction.com/media/1kjjan8l7i08kr1z4ld472tfmfnjgz74bp5vwy8vp94pl549j3/t_,w_800,h_800,wm_0/images.jpg?ver=100"
+    }
+  ],
+  "statistics": [
+    {
+      "value": "11M+",
+      "key": "activeUsers"
+    },
+    {
+      "value": "5+",
+      "key": "years"
+    },
+    {
+      "value": "157+",
+      "key": "auctions"
+    },
+    {
+      "value": "53+",
+      "key": "employees"
+    },
+    {
+      "value": "8",
+      "key": "branches"
+    }
+  ],
+  "stories": [
+    {
+      "year": "2026",
+      "items": [
+        {
+          "title": "Emirates Airline Foundation charity auction raises AED 8.8 million",
+          "subtitle": "AED 8.8 million raised on Emirates Auction for the Emirates Airline Foundation charity.",
+          "imageUrl": "https://www.emiratesauction.com/imagescdn/cfce6358-0835-4f5e-299c-566846841b00/width=1876,height=1251?ver=100"
+        },
+        {
+          "title": "United Arab Emirates reinforces its humanitarian leadership through the “Noble Number” auction",
+          "subtitle": "The Edge of Life campaign aims to protect children from hunger and malnutrition.",
+          "imageUrl": "https://www.emiratesauction.com/imagescdn/94eb0c85-d5d3-46ef-fd3b-10127bd83d00/width=917,height=612?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2025",
+      "items": [
+        {
+          "title": "AED 83.7M RAISED FOR FATHERS’ ENDOWMENT",
+          "subtitle": "AED 83.7M raised for the Fathers’ Endowment healthcare initiative.",
+          "imageUrl": "https://www.emiratesauction.com/imagescdn/8e3094c7-395d-4662-1f17-60103bece700/width=1876,height=1251?ver=100"
+        },
+        {
+          "title": "EMIRATES AUCTION RAIN RESCUE FLEET IN UAE",
+          "subtitle": "Emirates Auction deployed its recovery fleet during the UAE rains, clearing flooded roads and helping stranded drivers.",
+          "imageUrl": "https://www.emiratesauction.com/imagescdn/ceef4089-df04-4cb4-cb0f-87205fd99b00/width=917,height=612?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2024",
+      "items": [
+        {
+          "title": "Charity work continues",
+          "subtitle": "Emirates Auction is enhancing global education for children.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2tyj2s4byup43yj1n8396vwsjm4ip544jxl10uduigv8esh1qb/t_,w_1876,h_1251,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Rain-flood in UAE.",
+          "subtitle": "Emirates Auction ensured safety during the recent weather event.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/x1ibpi0oikno54idakm3fjm31uc1jgxhtyulotkd3ij17ozng/t_,w_917,h_612,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2023",
+      "items": [
+        {
+          "title": "P-7 The Most Expensive Car License Plate",
+          "subtitle": "\"Emirates Auction\" sold the plate number (P-7) for AED 55 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/33fjhyd84iyzsmz5rkmolmhpxypqfbnxm3z85f6y1vx1zirw77/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2022",
+      "items": [
+        {
+          "title": "Fujairah’s flooding rescue missions",
+          "subtitle": "We sent 200 vehicles and 300 employees to help.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/nccr7xbr709f2wh4y5x3zdwjj8vmiiu53w54c00cegahi1iy9/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "1 Billion Meal",
+          "subtitle": "\"Emirates Auction\" is a major supporter of the \"One Billion Meals\"",
+          "imageUrl": "https://cdn.emiratesauction.com/media/4aj4jjkmyizjntopouuegtdtu5t50m8yekz3t9hjjh9osk21o/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Amsak Charity Auction",
+          "subtitle": "\"Emirates Auction\" held the \"Amsak\" auction for global orphans.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/33yk8vj22qwxp5fd21o3e459i27a60przg425tho57z8la4ajg/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2021",
+      "items": [
+        {
+          "title": "100 Million Meal",
+          "subtitle": "\"Emirates Auction\" is a top supporter of the \"100 Million Meals\" initiative.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/hyeeeue09tywjwbq12n3185x9rt561aizww1cak90ic8iyf9h/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2020",
+      "items": [
+        {
+          "title": "Most expensive property sold at an Online Auction",
+          "subtitle": "The most expensive property sold for AED 700.2 million in an online auction.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2fvvf22ehymgq07hrhnd1hcj1m3nt0yuw91gecvf6ts3vldij1/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2018",
+      "items": [
+        {
+          "title": "The charity continues",
+          "subtitle": "Charity auction of 55 unique numbers for \"Big Heart Foundation.\"",
+          "imageUrl": "https://cdn.emiratesauction.com/media/19dgeku3qonzd7pigs4j5rg4ftbgq1ncoz10ysg3tu2wwrdx44/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2017",
+      "items": [
+        {
+          "title": "Now The \"Arabian Auction\" in Bahrain.",
+          "subtitle": "\"Emirates Auction\" has launched \"Arabian Auction\" in Bahrain.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2zr1rrkp5xomim6j0y73jeqy6d7o6cem0lvplb63mh0chrf3wx/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Ajman auction for plates number",
+          "subtitle": "We featured unique numbers, including the single-digit number (2).",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2gdvn5i7g1yhjvv215m8sj9sy6tpwj9uyy40snqafgph09cx0a/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2016",
+      "items": [
+        {
+          "title": "Advancing in Real Estate",
+          "subtitle": "Most expensive property sold online for AED 385 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2cgbdqegtroe553bksdfr1t7jcr94w3zxp5wt4g80oeaub6z6v/t_,w_1000,h_1000,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Reading Nation",
+          "subtitle": "We raised over 40 million AED for 7.27 million books for refugee students.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2u7otbis61svcfhgqf2j5cxwbfe1rp3kto493e2fzyg9h2me2g/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "RAK plates auction",
+          "subtitle": "Now we are the first company to organize an online auction for selling plates.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2t7j3dpop0gvf9lcltv8kuvib24r2nigaa3ykyk5wafdu8xsgj/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Plates Auction in Sharjah",
+          "subtitle": "We set a new record with 1,340 bidders and raised 45 million AED.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/z6e60c85ctm3xp9cu5vvka85i4pnhq5jhnggxqinfqtdtx9dw/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2015",
+      "items": [
+        {
+          "title": "Al Jalila Foundation",
+          "subtitle": "Charity auction raising AED 89.8 million to support the Al Jalila Foundation.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/t4a85lpkrvanpvxa2v2004y04awc8u5qdcfnblvyoo1t2azmp/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "The Most Expensive Saddle",
+          "subtitle": "We set a record by selling the most expensive saddle for AED 2.4 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/34t95059rssb5915xf2kzbodqt31w797jckfhfapk54ofsnx2g/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "The most expensive helmet was sold.",
+          "subtitle": "Sheikh Mohammed bin Rashid Al Maktoum's helmet sold for AED 24 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/aicq3sap9agfl6hhvvroo7uwhqua8yubi430wkorzl4o8lsox/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "The most expensive property",
+          "subtitle": "We sold the \"most expensive property online\" for AED 98.4 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2g1j9jr6mlebj7xikcv0rj3r0r8advwi63rx4ws0tn7opds6o/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2014",
+      "items": [
+        {
+          "title": "Launching the Android app",
+          "subtitle": "Emirates Auction has launched its app for the first time on Android phones.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/o7cgcftb2w3dir2g1yhcad1nuhohnapjn09iji4x22f1e1n4q/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Unlocking Further Achievements",
+          "subtitle": "The most expensive oil tanker sold online at USD 20.1 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/1ewmdzcld72n4ku6v9dclm77jv5zml2qbrvz8qbnqgc5yqn3vy/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Beginning our community contributions.",
+          "subtitle": "Emirates Auction held a charity auction for the infamous Philippines typhoon.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/1v4vl49sqdj21a210a9mmsawguiu22gblsqvbvc0jtaikv6rjw/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "Successful Partnership with Etisalat",
+          "subtitle": "Unique auction for Etisalat's premium packages in Abu Dhabi and Dubai.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/5n4fl7yzyh5rivz7tu294v4nlgj7d0433em623q0jklz9hapg/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2013",
+      "items": [
+        {
+          "title": "The Path to Glory",
+          "subtitle": "Record set for the highest property sale at an online auction: $25.6 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/j7e2ui41e4kl4yvgvyfj5bgntkpb98w4hhmkn5q0b99u60jb2/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2012",
+      "items": [
+        {
+          "title": "ISO Certified",
+          "subtitle": "We achieved top global quality standards and received multiple certifications.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/1p4e9geyx8t6xvm98kr7sqb45m36lsspx9g6j0q4h2q9u1nzsj/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2011",
+      "items": [
+        {
+          "title": "Launching the IOS app",
+          "subtitle": "The first auction app in the Middle East for Apple phones was launched.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2yizsy7b3obts1gmih5snkbw9xwkgds2abweraj9tofz2thnne/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2010",
+      "items": [
+        {
+          "title": "The First Online Auction for Vehicles and Equipment",
+          "subtitle": "The first and unique auction in the Middle East and even the world.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/25080kz2ycz5fwppgow0exl5jh2byaclwqxshqfxx3sqdi3rb2/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2008",
+      "items": [
+        {
+          "title": "Breaking a New Record",
+          "subtitle": "We Break the Record Again: Sale of Plate No. '1 – Abu Dhabi' for $14.2 Million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/hesisj7273hgop7fefxa9l7wzvhwrtniu1q797ybzjyqe44ue/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "The First Online Auction for Selling Number Plates",
+          "subtitle": "We are the first to introduce the online auction culture to the region.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/1csy6xierxi73l5j7h1t8dzjmt683ge5a6jdymmi1r7koz0hob/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2007",
+      "items": [
+        {
+          "title": "The first physical auction",
+          "subtitle": "Abu Dhabi's first number plate auction began a series of achievements.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/qz2hg7s52sgv8xvnc460tznlxsovjmp3h1id51h8egt8m32i4/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        },
+        {
+          "title": "The first world record",
+          "subtitle": "\"Number 5 – Abu Dhabi\" plate sold for $6.8 million.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/2ft4z4mvdrga5gp8bgjgoqp1xtrdbib23t3v511wkb9azwzdel/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    },
+    {
+      "year": "2004",
+      "items": [
+        {
+          "title": "The Start of a Successful Journey",
+          "subtitle": "Emirates Auction became a Middle East auction industry leader.",
+          "imageUrl": "https://cdn.emiratesauction.com/media/1z3iftvawf0yiyciwplx0473mjdhj0dmminojhtaaro79h2udb/t_,w_2190,h_900,wm_0,tr_1/images.png?ver=100"
+        }
+      ]
+    }
+  ],
+  "news": [
+    {
+      "id": "338",
+      "title": "Emirates Auction: Emirati Women Are a Key Pillar of the UAE’s Vision for the Next 50 Years",
+      "titleAr": "الإمارات للمزادات : المرأة الإماراتية ركيزة أساسية في رؤية الدولة للخمسين عاماً المقبلة",
+      "description": "H.E. Abdulla Matar Al Mannaei, Chairman and Managing Director of Emirates Auction, affirmed that cel...",
+      "date": "2026-08-28T00:00:00",
+      "imageUrl": "https://www.emiratesauction.com/imagescdn/13e79a1b-0e9c-417c-16f7-51c094077400/width=800,height=533",
+      "sourceTitle": "EMIRATES NEWS AGENCY - WAM"
+    },
+    {
+      "id": "337",
+      "title": "As Part of the New Academic Year Initiative, Darbak Sahal Enhances Traffic and Licensing Services for Students and Educational Staff",
+      "titleAr": "ضِمن مُبادرة العام الدراسي الجديد دربك سهل تُعزّز خدمات المرور والترخيص للطلبة والكوادر التعليميّة",
+      "description": "His Excellency Major General Staff Omar Ali Al Ghazal, Director General of the General Department of...",
+      "date": "2026-08-20T00:00:00",
+      "imageUrl": "https://www.emiratesauction.com/imagescdn/a5837b63-239a-4ef9-83c5-feee4bdd8e00/width=800,height=533",
+      "sourceTitle": "Media Center – Sharjah Police Headquarters"
+    },
+    {
+      "id": "336",
+      "title": "The Third Edition of Dubai Dates Officially Kicks Off",
+      "titleAr": "انطلاق النسخة الثالثة من دبي للرطب",
+      "description": "The third edition of Dubai Dates officially commenced today, organized by the Hamdan Bin Mohammed He...",
+      "date": "2026-07-18T00:00:00",
+      "imageUrl": "https://www.emiratesauction.com/imagescdn/0fa21d79-cb45-4908-abfa-8c5f66a87600/width=800,height=533",
+      "sourceTitle": "EMIRATES NEWS AGENCY - WAM"
+    },
+    {
+      "id": "335",
+      "title": "Emirates Auction: Union Pledge Day Values Continue to Inspire the Nation’s Development Journey",
+      "titleAr": "الإمارات للمزادات : قيم يوم عهد الاتحاد تمثل الأساس والمنطلق لمسيرة التنمية",
+      "description": "Abdulla Matar Al Mannai, Chairman and Managing Director of Emirates Auction, affirmed that Union Ple...",
+      "date": "2026-07-17T00:00:00",
+      "imageUrl": "https://www.emiratesauction.com/imagescdn/7165889b-3c5a-4029-530a-1a39dfd45c00/width=800,height=533",
+      "sourceTitle": "EMIRATES NEWS AGENCY - WAM"
+    },
+    {
+      "id": "334",
+      "title": "Forbes Middle East Names Omar Matar Al Mannaei Among the Most Influential CMOs of 2026",
+      "titleAr": "فوربس الشرق الأوسط تدرج عمر مطر المناعي ضمن قائمة أقوى قادة التسويق في الشرق الأوسط لعام 2026",
+      "description": "Omar Matar Al Mannaei has been the CEO and CMO since 2016. In 2025, following the launch of the AI-D...",
+      "date": "2026-06-13T00:00:00",
+      "imageUrl": "https://www.emiratesauction.com/imagescdn/e5af7e6f-c2b2-4f85-b901-034e06864f00/width=800,height=533",
+      "sourceTitle": "Forbes Middle East"
+    },
+    {
+      "id": "333",
+      "title": "From Al Hadeer to Al Azm : Dubai Police Turn Weather Challenges into Proactive Field Plans",
+      "titleAr": "من الهدير إلى العزم .. شرطة دبي تحوّل تحديات الطقس إلى خطط ميدانية استباقية",
+      "description": "When the UAE was affected by the “Al Hadeer” weather system in 2024, rescue teams from the General D...",
+      "date": "2026-06-07T00:00:00",
+      "imageUrl": "https://www.emiratesauction.com/imagescdn/1c52beef-7c70-4739-ece7-b0407f70c900/width=800,height=533",
+      "sourceTitle": "Al Emarat Al Youm"
+    }
+  ],
+  "gallery": [
+    {
+      "id": "31",
+      "title": "Most Noble Number charity auction in support of Mothers’ Endowment campaign",
+      "subtitle": "",
+      "imageUrl": "https://cdn.emiratesauction.com/media/mpv36dkb5cuic3a2yn607qfh8q73jz4ehgc707uou6slgy8rl/t_,w_1417,h_648,wm_0,tr_1/images.jpg",
+      "mediaType": 1
+    },
+    {
+      "id": "48",
+      "title": "Emirates Auction Participation in Gitex 2024",
+      "subtitle": "",
+      "imageUrl": "https://cdn.emiratesauction.com/media/1f30lcwby9jg9svcksz332807482htpemanaeg5n89bosboudo/t_,w_2120,h_1786,wm_0,tr_1/images.jpg",
+      "mediaType": 1
+    },
+    {
+      "id": "24",
+      "title": "1 Billion Meals Endowment Auction",
+      "subtitle": "",
+      "imageUrl": "https://cdn.emiratesauction.com/media/sfepg145a5cphcsq1o4ui70jhjr312mjbclk58dkjt7ra9j7r/t_,w_800,h_800,wm_0/images.jpg",
+      "mediaType": 1
+    },
+    {
+      "id": "51",
+      "title": "The 5th edition of The Most Noble Number auction in support of Fathers’ Endowment",
+      "subtitle": "",
+      "imageUrl": "https://www.emiratesauction.com/imagescdn/ebe7097d-39a4-4e34-dba5-8f7e882ad500/width=1080,height=1920",
+      "mediaType": 1
+    }
+  ],
+  "faqs": [
+    {
+      "id": "1",
+      "question": "What services does Emirates Auction provide?",
+      "answer": "Emirates Auction provides a range of services, including auctions for vehicles, real estate, car plates, machinery, Etisalat numbers, and more. The platform enables both online bidding and direct sales, allowing users to buy and sell items through a smooth and seamless bidding process."
+    },
+    {
+      "id": "2",
+      "question": "How to buy an item in an auction?",
+      "answer": "It is simple: start by creating an account , pay the security deposit, place your bid, and win. Don't worry the deposit is fully refundable if you don't win the bid. Please note that certain items, such as number plates, are also available for direct sale."
+    },
+    {
+      "id": "3",
+      "question": "Is registering on Emirates Auction free of charge?",
+      "answer": "Yes, you don’t need to pay any fees to register your account but you might need to pay a security deposit (refundable) to participate in auctions."
+    },
+    {
+      "id": "4",
+      "question": "Can anyone from any nationality register and bid?",
+      "answer": "All nationalities are eligible to register and bid on any item. However, some specific items may have restrictions, which will be clearly mentioned on the item’s details page."
+    }
+  ]
+}

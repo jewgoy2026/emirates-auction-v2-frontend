@@ -6,6 +6,25 @@ const commonHeaders: Record<string, string> = {
 };
 function json(message: string, status: number) { return Response.json({ error: { message } }, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } }); }
 function validBase(value?: string) { if (!value) return null; try { const url = new URL(value); if (url.protocol === 'https:' || (url.protocol === 'http:' && ['127.0.0.1','localhost'].includes(url.hostname))) return url; } catch {} return null; }
+async function platePreview(request: Request) {
+  if (!['GET','HEAD'].includes(request.method)) return json('Method not allowed.', 405);
+  const input = new URL(request.url), image = input.searchParams.get('image') ?? '', auctionTypeId = input.searchParams.get('auctionTypeId') ?? '';
+  const plateNumber = input.searchParams.get('plateno') ?? '', code = input.searchParams.get('code') ?? '', plateType = input.searchParams.get('platetype') ?? '';
+  const width = input.searchParams.get('width') ?? '900', height = input.searchParams.get('height') ?? '700';
+  const allowedAuctions = new Set(['12','16','18','23','27']), allowedSizes = new Set(['500','700','900','1600']);
+  if (!/^\d{1,6}$/.test(image) || !allowedAuctions.has(auctionTypeId) || !/^\d{1,12}$/.test(plateNumber) || !/^[A-Za-z0-9-]{1,12}$/.test(code) || !/^[a-z0-9]{1,16}$/i.test(plateType) || !allowedSizes.has(width) || !allowedSizes.has(height)) return json('Invalid plate preview request.', 400);
+  const upstream = new URL('https://apiv8.emiratesauction.net/api/Image/PlateOnCar');
+  for (const [key,value] of Object.entries({ image, auctionTypeId, plateno: plateNumber, code, platetype: plateType, width, height, platform: 'web' })) upstream.searchParams.set(key,value);
+  try {
+    const response = await fetch(upstream, { method: request.method, headers: { Accept: 'image/png' }, signal: AbortSignal.timeout(15_000) });
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!response.ok || !contentType.toLowerCase().startsWith('image/')) return json('Plate preview is temporarily unavailable.', 502);
+    const headers = new Headers({ 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800', 'X-Content-Type-Options': 'nosniff' });
+    const length = response.headers.get('content-length'); if (length) headers.set('Content-Length', length);
+    if (input.searchParams.get('download') === '1') headers.set('Content-Disposition', `attachment; filename="plate-${plateNumber}-${code}.png"`);
+    return new Response(request.method === 'HEAD' ? null : response.body, { status: 200, headers });
+  } catch { return json('Plate preview is temporarily unavailable.', 503); }
+}
 async function proxy(request: Request, env: Env) {
   const requestUrl = new URL(request.url), base = validBase(env.API_BASE_URL); if (!base) return json('The service API is not configured.', 503);
   if (!env.INTERNAL_API_TOKEN || env.INTERNAL_API_TOKEN.length < 48) return json('The service gateway is not configured.', 503);
@@ -31,7 +50,7 @@ async function proxy(request: Request, env: Env) {
   } catch { return json('The service is temporarily unavailable.', 503); }
 }
 export default { async fetch(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url); if (url.pathname.startsWith('/api/')) return proxy(request, env);
+  const url = new URL(request.url); if (url.pathname === '/api/v1/public/plate-preview') return platePreview(request); if (url.pathname.startsWith('/api/')) return proxy(request, env);
   const response = await env.ASSETS.fetch(request), headers = new Headers(response.headers); for (const [key,value] of Object.entries(commonHeaders)) headers.set(key,value);
   headers.set('X-Robots-Tag', url.hostname.endsWith('.workers.dev') ? 'noindex, nofollow' : 'index, follow');
   if (/\.(?:js|css|svg|png|jpg|jpeg|webp|woff2)$/.test(url.pathname)) headers.set('Cache-Control','public, max-age=31536000, immutable');

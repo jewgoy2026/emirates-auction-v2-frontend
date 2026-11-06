@@ -44,6 +44,50 @@ function categoryIcon(name: string) { const key = Object.keys(categoryIcons).fin
 
 type Language = 'en' | 'ar';
 
+type V1HomeCategory = {
+  key: string; titleEn: string; titleAr: string; targetCategory: string; count: number; active: boolean;
+  mode: Category['defaultMode']; imageEn: string; imageAr: string; backgroundImageEn: string; backgroundImageAr: string;
+  mainTextColor: string; secondaryTextColor: string; cardSize: string; cardCategory: string; navLink: string;
+};
+type V1HomeSnapshot = {
+  generatedAt: string;
+  endingToday: { count: number; minimumEndDate: string | null };
+  banners: Array<{ type: number; order: number; url: string; tabletUrl: string; mobileUrl: string; title: string; subtitle: string }>;
+  categories: V1HomeCategory[];
+  achievements: Array<{ title: string; price: string; date: string; imageUrl: string }>;
+  statistics: Array<{ value: string; key: 'activeUsers' | 'years' | 'auctions' | 'employees' | 'branches' }>;
+  stories: Array<{ year: string; items: Array<{ title: string; subtitle: string; imageUrl: string }> }>;
+  news: Array<{ id: string; title: string; titleAr: string; description: string; date: string; imageUrl: string; sourceTitle: string }>;
+  gallery: Array<{ id: string; title: string; subtitle: string; imageUrl: string; mediaType: number }>;
+  faqs: Array<{ id: string; question: string; answer: string }>;
+};
+type PlatePreviewSnapshot = {
+  generatedAt: string;
+  formats: Array<{ category: string; auctionTypeId: number; suffix: string; plateType: number }>;
+  makes: Array<{ id: number; title: string; logoUrl: string; models: Array<{ id: string; title: string; imageTemplate: string }> }>;
+};
+type PlateMeta = { auctionTypeId: number; suffix: string; plateType: number; code: string; number: string };
+
+type HomeCategory = V1HomeCategory & { source: Category | null };
+
+function plateMeta(lot: Lot, preview: PlatePreviewSnapshot | null): PlateMeta | null {
+  const format = preview?.formats.find((item) => item.category === lot.category);
+  if (!format) return null;
+  const title = lot.title.startsWith(lot.category) ? lot.title.slice(lot.category.length).trim() : lot.title.trim();
+  const parts = title.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return null;
+  const number = parts.at(-1) ?? '', code = parts.slice(0, -1).join(' ');
+  if (!/^[A-Za-z0-9-]{1,12}$/.test(code) || !/^\d{1,12}$/.test(number)) return null;
+  return { auctionTypeId: format.auctionTypeId, suffix: format.suffix, plateType: format.plateType, code, number };
+}
+
+function plateWorkerUrl(template: string, plate: PlateMeta, width = 900, height = 700, download = false) {
+  const image = new URL(template).searchParams.get('image') ?? '';
+  const query = new URLSearchParams({ image, auctionTypeId: String(plate.auctionTypeId), plateno: plate.number, code: plate.code, platetype: plate.suffix, width: String(width), height: String(height) });
+  if (download) query.set('download','1');
+  return `/api/v1/public/plate-preview?${query}`;
+}
+
 const copy = {
   en: {
     homeTitle: 'Car, Plate and Property Auctions in the UAE', endingToday: 'ENDING TODAY', endingDescription: "Don't miss out, these auctions are ending today.", endingNow: 'Ending Now',
@@ -120,14 +164,26 @@ const faqs = {
 export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage?: Language }) {
   const language = initialLanguage, rtl = language === 'ar', t = copy[language];
   const [categories, setCategories] = useState<Category[]>([]), [lots, setLots] = useState<Lot[]>([]), [rails, setRails] = useState<Rail[]>([]);
+  const [v1Home, setV1Home] = useState<V1HomeSnapshot | null>(null);
+  const [platePreview, setPlatePreview] = useState<PlatePreviewSnapshot | null>(null), [plateCarLot, setPlateCarLot] = useState<Lot | null>(null), [plateMakeId, setPlateMakeId] = useState(0), [plateModelId, setPlateModelId] = useState(''), [plateLoading, setPlateLoading] = useState(false), [plateDownloading, setPlateDownloading] = useState(false);
   const [user, setUser] = useState<User | null>(null), [account, setAccount] = useState<Account | null>(null);
   const [loading, setLoading] = useState(true), [notice, setNotice] = useState(''), [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All'), [search, setSearch] = useState(''), [visible, setVisible] = useState(24), [now, setNow] = useState(Date.now());
   const [authMode, setAuthMode] = useState<'identify' | 'login' | 'register' | null>(null), [accountIdentifier, setAccountIdentifier] = useState(''), [accountOpen, setAccountOpen] = useState(false), [selectedLot, setSelectedLot] = useState<Lot | null>(null);
   const [paymentFor, setPaymentFor] = useState<Invoice | 'funds' | null>(null), [intent, setIntent] = useState<PaymentIntent | null>(null), [qr, setQr] = useState(''), [winnerHidden, setWinnerHidden] = useState(false), [busy, setBusy] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false), [searchOpen, setSearchOpen] = useState(false), [activeFaq, setActiveFaq] = useState(0), [activeSell, setActiveSell] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false), [searchOpen, setSearchOpen] = useState(false), [activeFaq, setActiveFaq] = useState(0), [activeSell, setActiveSell] = useState(0), [activeStoryYear, setActiveStoryYear] = useState('');
 
   async function loadPublic() {
+    const homeRequest = fetch('/snapshot/v1-home.json', { cache: 'no-store' }).then(async (response) => {
+      if (!response.ok) throw new Error('V1 homepage snapshot is unavailable.');
+      return response.json() as Promise<V1HomeSnapshot>;
+    }).catch(() => null);
+    const plateRequest = fetch('/snapshot/plate-preview.json', { cache: 'no-store' }).then(async (response) => {
+      if (!response.ok) throw new Error('Plate preview snapshot is unavailable.');
+      return response.json() as Promise<PlatePreviewSnapshot>;
+    }).catch(() => null);
+    void homeRequest.then((home) => { if (home) { setV1Home(home); setActiveStoryYear((value) => value || home.stories[0]?.year || ''); } });
+    void plateRequest.then((preview) => { if (preview) setPlatePreview(preview); });
     let categoryData: {items: unknown[]}, catalogData: {items: unknown[]}, railData: {rails: Rail[]};
     try {
       [categoryData, catalogData, railData] = await Promise.all([
@@ -159,12 +215,41 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   const filtered = useMemo(() => lots.filter((lot) => (selectedCategory === 'All' || lot.category === selectedCategory) && (!search || `${lot.title} ${lot.category}`.toLowerCase().includes(search.toLowerCase()))), [lots, search, selectedCategory]);
   const imageLots = useMemo(() => lots.filter((lot) => lot.imageUrl), [lots]);
   const endingCount = useMemo(() => lots.filter((lot) => lot.status === 'open' && lot.endsAt > now && lot.endsAt - now < 86_400_000).length, [lots, now]);
+  const homeCategories = useMemo<HomeCategory[]>(() => {
+    if (v1Home?.categories.length) return v1Home.categories.filter((category) => category.active).map((category) => ({ category, source: categories.find((item) => item.title === category.targetCategory) ?? null })).map(({ category, source }) => ({ ...category, source }));
+    return categories.map((category) => ({
+      key: category.id, titleEn: category.title, titleAr: localizedCategory(category.title, 'ar'), targetCategory: category.title,
+      count: category.itemCount, active: category.status === 'active', mode: category.defaultMode, imageEn: '', imageAr: '', backgroundImageEn: '', backgroundImageAr: '',
+      mainTextColor: '#15171A', secondaryTextColor: '#495361', cardSize: category.styleVariant === 'feature' ? 'Medium' : 'Small', cardCategory: category.styleVariant === 'feature' ? 'WithBackGround' : 'Plain', navLink: '', source: category,
+    }));
+  }, [categories, v1Home]);
+  const activeStory = useMemo(() => v1Home?.stories.find((group) => group.year === activeStoryYear) ?? v1Home?.stories[0] ?? null, [activeStoryYear, v1Home]);
+  const heroBanner = v1Home?.banners.slice().sort((a, b) => a.order - b.order)[0] ?? null;
+  const selectedPlate = plateCarLot ? plateMeta(plateCarLot, platePreview) : null;
+  const selectedMake = platePreview?.makes.find((make) => make.id === plateMakeId) ?? platePreview?.makes[0] ?? null;
+  const selectedModel = selectedMake?.models.find((model) => model.id === plateModelId) ?? selectedMake?.models[0] ?? null;
+  const selectedPlateImage = selectedPlate && selectedModel ? plateWorkerUrl(selectedModel.imageTemplate,selectedPlate) : '';
+  useEffect(() => { if (selectedPlateImage) setPlateLoading(true); }, [selectedPlateImage]);
   const sellCategories = language === 'ar' ? ['المركبات والآليات', 'ساعات ومجوهرات', 'العقارات', 'أرقام لوحات'] : ['Vehicles & Machinery', 'Watches and Jewellery', 'Properties', 'License Plates'];
   const storyItems = language === 'ar' ? [
     ['2026', 'مزاد خيري لمؤسسة طيران الإمارات يجمع 8.8 ملايين درهم'], ['2025', 'الإمارات ترسّخ ريادتها الإنسانية عبر أنبل رقم'], ['2024', 'جهود الإمارات للمزادات في دعم الطرق خلال أمطار الإمارات'],
   ] : [
     ['2026', 'Emirates Airline Foundation charity auction raises AED 8.8 million'], ['2025', 'The UAE reinforces its humanitarian leadership through Noble Number'], ['2024', 'Emirates Auction rain rescue fleet supports UAE roads'],
   ];
+  const achievements = v1Home?.achievements.length ? v1Home.achievements : [
+    { title: rtl ? 'أغلى لوحة مركبة في العالم' : 'The most expensive car license plate', price: 'AED 55 million', date: '', imageUrl: imageLots[0]?.imageUrl ?? '' },
+    { title: rtl ? 'أغلى عقار في مزاد إلكتروني' : 'The most expensive property sold online', price: 'AED 700.2 million', date: '', imageUrl: imageLots[4]?.imageUrl ?? '' },
+    { title: rtl ? 'أغلى مركبة في مزاد إلكتروني' : 'A landmark vehicle auction', price: 'AED 74.1 million', date: '', imageUrl: imageLots[8]?.imageUrl ?? '' },
+  ];
+  const statistics = v1Home?.statistics.length ? v1Home.statistics : [
+    { value: '11M+', key: 'activeUsers' as const }, { value: '5+', key: 'years' as const }, { value: '157+', key: 'auctions' as const },
+    { value: '53+', key: 'employees' as const }, { value: '8', key: 'branches' as const },
+  ];
+  const storyGroups = v1Home?.stories.length ? v1Home.stories : [{ year: '2026', items: storyItems.map(([year, title], index) => ({ title, subtitle: year, imageUrl: imageLots[10 + index]?.imageUrl ?? imageLots[index]?.imageUrl ?? '' })) }];
+  const selectedStory = activeStory ?? storyGroups[0] ?? null;
+  const newsEntries = v1Home?.news.length ? v1Home.news : news[language].map(([title, published], index) => ({ id: String(index), title, titleAr: title, description: '', date: published, imageUrl: imageLots[16 + index]?.imageUrl ?? imageLots[index]?.imageUrl ?? '', sourceTitle: 'Emirates Auction Media Center' }));
+  const galleryEntries = v1Home?.gallery.length ? v1Home.gallery : [0, 1, 2].map((index) => ({ id: String(index), title: index === 0 ? (rtl ? 'مزاد أنبل رقم الخيري' : 'Most Noble Number charity auction') : index === 1 ? (rtl ? 'وقف المليار وجبة' : 'One Billion Meals Endowment Auction') : (rtl ? 'ذكريات الإمارات للمزادات' : 'Emirates Auction memories'), subtitle: '', imageUrl: imageLots[20 + index]?.imageUrl ?? imageLots[index]?.imageUrl ?? '', mediaType: 1 }));
+  const faqEntries = !rtl && v1Home?.faqs.length ? v1Home.faqs : faqs[language].map(([question, answer], index) => ({ id: String(index), question, answer }));
   const outstanding = account?.invoices.find((invoice) => invoice.status === 'outstanding') ?? null;
 
   async function submitAuth(event: FormEvent<HTMLFormElement>) {
@@ -205,6 +290,28 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
     try { const data = await api<{withdrawal: unknown}>('/v1/payment/withdrawals', { body: { amountMinor: aedMinor(form.get('amount') ?? ''), asset: rail.asset, network: rail.network, destination: form.get('destination'), memo: form.get('memo') } }); const item: Withdrawal = normalizeWithdrawal(data.withdrawal); await loadAccount(); setNotice(`Withdrawal ${item.id.slice(0,8)} submitted for review.`); event.currentTarget.reset(); }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Withdrawal request failed.'); } finally { setBusy(false); }
   }
+  function openPlatePreview(lot: Lot) {
+    const firstMake = platePreview?.makes[0];
+    setPlateCarLot(lot); setPlateMakeId(firstMake?.id ?? 0); setPlateModelId(firstMake?.models[0]?.id ?? ''); setPlateLoading(true);
+  }
+  async function downloadPlatePreviewImage() {
+    if (!selectedPlate || !selectedModel) return;
+    setPlateDownloading(true); setError('');
+    try {
+      const response = await fetch(plateWorkerUrl(selectedModel.imageTemplate,selectedPlate,1600,900));
+      if (!response.ok) throw new Error('Preview download is unavailable.');
+      const bitmap = await createImageBitmap(await response.blob()), canvas = document.createElement('canvas');
+      canvas.width = bitmap.width; canvas.height = bitmap.height;
+      const context = canvas.getContext('2d'); if (!context) throw new Error('Preview download is unavailable.');
+      context.drawImage(bitmap,0,0); bitmap.close();
+      const coverWidth = Math.round(canvas.width * .44), coverHeight = Math.round(canvas.height * .18), coverX = Math.round((canvas.width - coverWidth) / 2), coverY = canvas.height - coverHeight;
+      context.fillStyle = '#f7f7f7'; context.fillRect(coverX,coverY,coverWidth,coverHeight); context.fillStyle = '#c91b3b'; context.fillRect(coverX,coverY,coverWidth,Math.max(4,Math.round(canvas.height*.008)));
+      context.fillStyle = '#1a1a1a'; context.textAlign = 'center'; context.font = `700 ${Math.max(18,Math.round(canvas.width*.026))}px Arial`; context.fillText('EMIRATES AUCTION',canvas.width/2,coverY+coverHeight*.52);
+      context.fillStyle = '#777'; context.font = `500 ${Math.max(12,Math.round(canvas.width*.014))}px Arial`; context.fillText(`${selectedPlate.code} · ${selectedPlate.number}`,canvas.width/2,coverY+coverHeight*.76);
+      const blob = await new Promise<Blob | null>((resolve)=>canvas.toBlob(resolve,'image/png',.95)); if (!blob) throw new Error('Preview download is unavailable.');
+      const url = URL.createObjectURL(blob), anchor = document.createElement('a'); anchor.href=url; anchor.download=`plate-${selectedPlate.number}-${selectedPlate.code}.png`; anchor.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'Preview download is unavailable.'); } finally { setPlateDownloading(false); }
+  }
 
   return <div id="top" className="ea-shell" dir={rtl ? 'rtl' : 'ltr'}>
     <header className="ea-header">
@@ -223,7 +330,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
 
     {menuOpen && <div className="ea-drawer-layer" onMouseDown={(event) => event.currentTarget === event.target && setMenuOpen(false)}><aside className="ea-drawer" aria-label={t.auctionCategories}>
       <div className="ea-drawer-head"><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/><button onClick={() => setMenuOpen(false)} aria-label={rtl?'إغلاق':'Close'}><Icon name="close"/></button></div>
-      <div className="ea-drawer-content"><section><h2>{t.auctionCategories}</h2>{categories.map((category) => <button key={category.id} onClick={() => { setSelectedCategory(category.title); setMenuOpen(false); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}><span><Icon name={categoryIcon(category.title)} size={19}/>{localizedCategory(category.title, language)}</span><b>{category.itemCount || ''}</b></button>)}</section>
+      <div className="ea-drawer-content"><section><h2>{t.auctionCategories}</h2>{homeCategories.map((category) => <button key={category.key} onClick={() => { setSelectedCategory(category.targetCategory); setMenuOpen(false); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}><span><Icon name={categoryIcon(category.targetCategory)} size={19}/>{rtl ? category.titleAr : category.titleEn}</span><b>{category.count || ''}</b></button>)}</section>
       <section><h2>{t.emiratesAuction}</h2>{[[t.about,'#about'],[t.calendar,'#story'],[t.sell,'#sell'],[t.help,'#faq'],[t.findUs,'#contact'],[t.contact,'#contact']].map(([label,href]) => <a key={label} href={href} onClick={() => setMenuOpen(false)}><span>{label}</span><Icon name="arrow" size={18}/></a>)}</section>
       <section className="ea-language"><h2>{t.language}</h2><a href={rtl ? '/' : '/ar'}>{rtl ? 'English' : 'العربية'} <Icon name="arrow" size={18}/></a></section></div>
     </aside></div>}
@@ -231,16 +338,25 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
     <main>
       <h1 className="sr-only">{t.homeTitle}</h1>
       <section className="ea-auction-home" id="categories"><div className="ea-home-wrap">
-        <a className="ea-ending-card" href="#lots"><div><strong>{t.endingToday}</strong><span>{t.endingDescription}</span></div><div className="ea-ending-meta"><b><Icon name="grid" size={17}/>{endingCount || lots.filter((lot) => lot.status === 'open').length}</b><b><Icon name="clock" size={18}/>{t.endingNow}</b></div></a>
-        {loading ? <div className="ea-mosaic skeleton-grid">{Array.from({length:18},(_,index)=><i key={index}/>)}</div> : <div className="ea-mosaic">{categories.map((category,index) => {
-          const sample = lots.find((lot) => lot.category === category.title && lot.imageUrl), featured = [4,6,13,18].includes(index);
-          const mode = category.defaultMode === 'direct' ? t.directSale : category.defaultMode === 'request' ? t.request : category.defaultMode === 'notify' ? t.notify : t.onlineBidding;
-          const action = category.defaultMode === 'direct' ? t.buyNow : category.defaultMode === 'request' ? (category.title.toLowerCase().includes('package') ? t.requestPackage : t.requestPlate) : category.defaultMode === 'notify' ? t.notify : t.onlineBidding;
-          return <button key={category.id} className={`ea-category-tile ${featured ? 'ea-category-featured' : ''}`} style={featured && sample ? {backgroundImage:`linear-gradient(180deg,rgba(9,10,11,.05),rgba(9,10,11,.72)),url(${sample.imageUrl})`} : undefined} onClick={() => { setSelectedCategory(category.title); setVisible(24); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}>
-            {!!category.itemCount && <span className="ea-count-badge">{category.itemCount}</span>}
-            {!featured && <span className="ea-category-art">{sample ? <img src={sample.imageUrl} alt="" loading="lazy"/> : <Icon name={categoryIcon(category.title)} size={52}/>}</span>}
-            <span className="ea-category-copy"><strong>{localizedCategory(category.title,language)}</strong><small>{mode}</small></span>
-            <span className="ea-category-action">{category.defaultMode === 'direct' && <Icon name="wallet" size={15}/>} {action} <Icon name="arrow" size={15}/></span>
+        {heroBanner && <div className="ea-hero-banner" aria-label={heroBanner.title || 'Proud UAE'}><video autoPlay muted loop playsInline preload="metadata">
+          {heroBanner.mobileUrl && <source media="(max-width: 620px)" src={heroBanner.mobileUrl} type="video/mp4"/>}
+          {heroBanner.tabletUrl && <source media="(max-width: 1024px)" src={heroBanner.tabletUrl} type="video/mp4"/>}
+          <source src={heroBanner.url} type="video/mp4"/>
+        </video><span className="sr-only">{heroBanner.subtitle || heroBanner.title}</span></div>}
+        <a className="ea-ending-card" href="#lots"><div><strong>{t.endingToday}</strong><span>{t.endingDescription}</span></div><div className="ea-ending-meta"><b><Icon name="grid" size={17}/>{v1Home?.endingToday.count ?? (endingCount || lots.filter((lot) => lot.status === 'open').length)}</b><b><Icon name="clock" size={18}/>{t.endingNow}</b></div></a>
+        {loading ? <div className="ea-mosaic skeleton-grid">{Array.from({length:18},(_,index)=><i key={index}/>)}</div> : <div className="ea-mosaic">{homeCategories.map((category) => {
+          const sample = lots.find((lot) => lot.category === category.targetCategory && lot.imageUrl);
+          const featured = category.cardSize.toLowerCase() === 'medium', withBackground = category.cardCategory.toLowerCase().includes('background');
+          const tileImage = (rtl ? category.imageAr : category.imageEn).trim() || sample?.imageUrl || '';
+          const backgroundImage = (rtl ? category.backgroundImageAr : category.backgroundImageEn).trim() || tileImage;
+          const mode = category.mode === 'direct' ? t.directSale : category.mode === 'request' ? t.request : category.mode === 'notify' ? t.notify : t.onlineBidding;
+          const action = category.mode === 'direct' ? t.buyNow : category.mode === 'request' ? (category.titleEn.toLowerCase().includes('package') ? t.requestPackage : t.requestPlate) : category.mode === 'notify' ? t.notify : t.onlineBidding;
+          const title = rtl ? category.titleAr : category.titleEn;
+          return <button key={category.key} className={`ea-category-tile ${featured ? 'ea-category-featured' : ''} ${withBackground ? 'ea-category-background' : ''}`} style={withBackground && backgroundImage ? {backgroundImage:`linear-gradient(180deg,rgba(9,10,11,.04),rgba(9,10,11,.68)),url(${backgroundImage})`} : undefined} onClick={() => { setSelectedCategory(category.targetCategory); setVisible(24); document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'}); }}>
+            {!!category.count && <span className="ea-count-badge">{category.count}</span>}
+            {!withBackground && <span className="ea-category-art">{tileImage ? <img src={tileImage} alt={title} loading="lazy"/> : <Icon name={categoryIcon(category.targetCategory)} size={52}/>}</span>}
+            <span className="ea-category-copy" style={withBackground ? {color:'#fff'} : {color:category.mainTextColor}}><strong>{title}</strong><small style={withBackground ? {color:'#eee'} : {color:category.secondaryTextColor}}>{mode}</small></span>
+            <span className="ea-category-action">{category.mode === 'direct' && <Icon name="wallet" size={15}/>} {action} <Icon name="arrow" size={15}/></span>
           </button>;
         })}</div>}
       </div></section>
@@ -248,26 +364,26 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
       <section className="ea-market" id="lots"><div className="ea-content-wrap">
         <div className="ea-section-head"><div><span>{t.liveMarketplace}</span><h2>{selectedCategory === 'All' ? t.featured : localizedCategory(selectedCategory,language)}</h2><p>{filtered.length.toLocaleString(rtl?'ar-AE':'en-AE')} {t.lotsAvailable}</p></div><div className="ea-market-tools"><label><Icon name="search" size={18}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t.search}/></label><select value={selectedCategory} onChange={(event) => { setSelectedCategory(event.target.value); setVisible(24); }}><option value="All">{t.allCategories}</option>{categories.map((category)=><option key={category.id} value={category.title}>{localizedCategory(category.title,language)}</option>)}</select></div></div>
         {error && <div className="alert alert-error">{error}<button onClick={() => setError('')}><Icon name="close" size={17}/></button></div>}
-        {!loading && !filtered.length ? <Empty text={t.noLots}/> : <div className="ea-lot-grid">{filtered.slice(0,visible).map((lot) => <article className="ea-lot-card" key={lot.id}>
-          <button className="ea-lot-image" onClick={() => setSelectedLot(lot)}>{lot.imageUrl ? <img src={lot.imageUrl} alt={lot.title} loading="lazy"/> : <span><Icon name={categoryIcon(lot.category)} size={62}/></span>}<span className="ea-lot-badge">{lot.bidCount}</span><Status tone={lot.status === 'open' ? 'red' : lot.status === 'mirrored' ? 'gold' : 'neutral'}>{lot.mode === 'direct' ? t.directSale : lot.status === 'open' ? t.onlineBidding : t.viewDetails}</Status></button>
-          <div className="ea-lot-body"><span>{localizedCategory(lot.category,language)}</span><h3>{lot.title}</h3><div className="ea-lot-meta"><small>{lot.bidCount} {t.bids}</small><small>{t.lot} {lot.id.slice(0,8).toUpperCase()}</small></div><div className="ea-lot-price"><div><small>{lot.mode === 'direct' ? t.price : t.currentBid}</small><strong>{money(lot.currentPrice)}</strong></div>{lot.endsAt > now && <div className="timer"><Icon name="clock" size={16}/><span>{remaining(lot.endsAt,now)}</span></div>}</div><button onClick={() => setSelectedLot(lot)}>{lot.mode === 'direct' ? t.viewItem : lot.status === 'open' ? t.bidNow : t.viewDetails}<Icon name="arrow" size={17}/></button></div>
-        </article>)}</div>}
+        {!loading && !filtered.length ? <Empty text={t.noLots}/> : <div className="ea-lot-grid">{filtered.slice(0,visible).map((lot) => { const plate = plateMeta(lot, platePreview); return <article className="ea-lot-card" key={lot.id}>
+          <button className="ea-lot-image" onClick={() => setSelectedLot(lot)}>{lot.imageUrl ? <img src={lot.imageUrl} alt={lot.title} loading="lazy"/> : plate ? <span className="ea-plate-art"><small>{rtl?'الإمارات العربية المتحدة':'UNITED ARAB EMIRATES'}</small><strong><i>{plate.code}</i>{plate.number}</strong><em>{localizedCategory(lot.category,language).replace(/ Plates$/i,'')}</em></span> : <span><Icon name={categoryIcon(lot.category)} size={62}/></span>}<span className="ea-lot-badge">{lot.bidCount}</span><Status tone={lot.status === 'open' ? 'red' : lot.status === 'mirrored' ? 'gold' : 'neutral'}>{lot.mode === 'direct' ? t.directSale : lot.status === 'open' ? t.onlineBidding : t.viewDetails}</Status></button>
+          <div className="ea-lot-body"><span>{localizedCategory(lot.category,language)}</span><h3>{lot.title}</h3>{plate && <button className="ea-view-on-car" onClick={() => openPlatePreview(lot)}><Icon name="car" size={16}/>{rtl?'عرض اللوحة على السيارة':'View on Car'}</button>}<div className="ea-lot-meta"><small>{lot.bidCount} {t.bids}</small><small>{t.lot} {lot.id.slice(0,8).toUpperCase()}</small></div><div className="ea-lot-price"><div><small>{lot.mode === 'direct' ? t.price : t.currentBid}</small><strong>{money(lot.currentPrice)}</strong></div>{lot.endsAt > now && <div className="timer"><Icon name="clock" size={16}/><span>{remaining(lot.endsAt,now)}</span></div>}</div><button className="ea-lot-primary" onClick={() => setSelectedLot(lot)}>{lot.mode === 'direct' ? t.viewItem : lot.status === 'open' ? t.bidNow : t.viewDetails}<Icon name="arrow" size={17}/></button></div>
+        </article>; })}</div>}
         {visible < filtered.length && <div className="load-more"><button className="outline-button" onClick={() => setVisible((value) => value + 24)}>{t.loadMore}</button></div>}
       </div></section>
 
-      <section className="ea-records" id="about"><div className="ea-content-wrap"><div className="ea-title-block"><span>{t.recordsEyebrow}</span><h2>{t.recordsTitle}</h2><p>{t.recordCaption}</p></div><div className="ea-record-track">{[0,4,8].map((imageIndex,index) => { const lot=imageLots[imageIndex] ?? imageLots[index]; return <article key={index}>{lot?.imageUrl && <img src={lot.imageUrl} alt="" loading="lazy"/>}<div><b>0{index+1}</b><h3>{index===0 ? (rtl?'أغلى لوحة مركبة في العالم':'The most expensive car license plate') : index===1 ? (rtl?'أغلى عقار في مزاد إلكتروني':'The most expensive property sold online') : (rtl?'أغلى مركبة في مزاد إلكتروني':'A landmark vehicle auction')}</h3><span>{t.auctionPrice}</span><strong>{index===0?'AED 55 million':index===1?'AED 700.2 million':'AED 74.1 million'}</strong></div></article>; })}</div><button className="ea-outline-light">{t.recordsCta}<Icon name="arrow" size={17}/></button></div></section>
+      <section className="ea-records" id="about"><div className="ea-content-wrap"><div className="ea-title-block"><span>{t.recordsEyebrow}</span><h2>{t.recordsTitle}</h2><p>{t.recordCaption}</p></div><div className="ea-record-track" aria-label={t.recordsTitle}>{achievements.map((achievement,index) => <article key={`${achievement.title}-${achievement.date}-${index}`}>{achievement.imageUrl && <img src={achievement.imageUrl} alt={achievement.title} loading="lazy"/>}<div><b>{String(index+1).padStart(2,'0')}</b><h3>{achievement.title}</h3><span>{achievement.date || t.auctionPrice}</span><strong>{achievement.price}</strong></div></article>)}</div><button className="ea-outline-light">{t.recordsCta}<Icon name="arrow" size={17}/></button></div></section>
 
-      <section className="ea-numbers"><div className="ea-content-wrap"><div className="ea-title-block light"><span>{t.numbersEyebrow}</span><h2>{t.numbersTitle}</h2></div><div className="ea-number-grid">{[['15M+',t.activeUsers,'account'],['20+',t.years,'calendar'],['2300+',t.auctions,'gavel'],['1000+',t.employees,'grid'],['32',t.branches,'location']].map(([value,label,icon],index)=><div key={String(label)} className={index===4?'ea-branches':''}><Icon name={(icon==='location'?'grid':icon) as IconName} size={30}/><strong>{value}</strong><span>{label}</span></div>)}</div></div></section>
+      <section className="ea-numbers"><div className="ea-content-wrap"><div className="ea-title-block light"><span>{t.numbersEyebrow}</span><h2>{t.numbersTitle}</h2></div><div className="ea-number-grid">{statistics.map((item,index) => { const labels = { activeUsers:t.activeUsers, years:t.years, auctions:t.auctions, employees:t.employees, branches:t.branches }; const icons: Record<typeof item.key,IconName> = {activeUsers:'account',years:'calendar',auctions:'gavel',employees:'grid',branches:'grid'}; return <div key={item.key} className={index===4?'ea-branches':''}><Icon name={icons[item.key]} size={30}/><strong>{item.value}</strong><span>{labels[item.key]}</span></div>; })}</div></div></section>
 
-      <section className="ea-story" id="story"><div className="ea-content-wrap"><div className="ea-title-block"><span>{t.storyEyebrow}</span><h2>{t.storyTitle}</h2></div><div className="ea-year-line">{['2026','2025','2024','2023','2022','2021','2020','2018','2016','2014','2010','2004'].map((year,index)=><span className={index===0?'active':''} key={year}>{year}</span>)}</div><div className="ea-story-grid">{storyItems.map(([year,title],index)=>{const lot=imageLots[10+index]??imageLots[index];return <article key={year}>{lot?.imageUrl&&<img src={lot.imageUrl} alt="" loading="lazy"/>}<div><span>{year}</span><h3>{title}</h3><p>{rtl?'محطة بارزة في مسيرة الإمارات للمزادات ودورها في المبادرات المجتمعية والإنسانية.':'A defining milestone in Emirates Auction’s journey and its community and humanitarian initiatives.'}</p></div></article>;})}</div></div></section>
+      <section className="ea-story" id="story"><div className="ea-content-wrap"><div className="ea-title-block"><span>{t.storyEyebrow}</span><h2>{t.storyTitle}</h2></div><div className="ea-year-line">{storyGroups.map((group)=><button type="button" className={group.year===(selectedStory?.year ?? storyGroups[0]?.year)?'active':''} onClick={()=>setActiveStoryYear(group.year)} key={group.year}>{group.year}</button>)}</div><div className="ea-story-grid" key={selectedStory?.year}>{selectedStory?.items.map((item,index)=><article key={`${selectedStory.year}-${index}`}>{item.imageUrl&&<img src={item.imageUrl} alt={item.title} loading="lazy"/>}<div><span>{selectedStory.year}</span><h3>{item.title}</h3><p>{item.subtitle || (rtl?'محطة بارزة في مسيرة الإمارات للمزادات ودورها في المبادرات المجتمعية والإنسانية.':'A defining milestone in Emirates Auction’s journey and its community and humanitarian initiatives.')}</p></div></article>)}</div></div></section>
 
       <section className="ea-partner" style={imageLots[14]?.imageUrl?{backgroundImage:`linear-gradient(90deg,rgba(10,10,11,.9),rgba(10,10,11,.35)),url(${imageLots[14].imageUrl})`}:undefined}><div className="ea-content-wrap"><span>{t.partnerEyebrow}</span><h2>{t.partnerTitle}</h2><p>{t.partnerText}</p><a href="#contact">{t.letsTalk}<Icon name="arrow"/></a></div></section>
 
-      <section className="ea-media"><div className="ea-content-wrap"><div className="ea-title-row"><div><span>{t.newsEyebrow}</span><h2>{t.newsTitle}</h2></div><a href="#news">{t.moreNews}<Icon name="arrow" size={17}/></a></div><div className="ea-news-grid" id="news">{news[language].map(([title,published],index)=>{const lot=imageLots[16+index]??imageLots[index];return <article key={title} className={index===0?'featured':''}>{lot?.imageUrl&&<img src={lot.imageUrl} alt="" loading="lazy"/>}<div><time>{published}</time><h3>{title}</h3>{index===0&&<p>{rtl?'المصدر: المركز الإعلامي للإمارات للمزادات':'Source: Emirates Auction Media Center'}</p>}</div></article>;})}</div><div className="ea-title-row gallery-title"><div><span>{t.galleryEyebrow}</span><h2>{t.galleryTitle}</h2></div><a href="#gallery">{t.viewAlbums}<Icon name="arrow" size={17}/></a></div><div className="ea-gallery-grid" id="gallery">{[20,21,22].map((imageIndex,index)=>{const lot=imageLots[imageIndex]??imageLots[index];return <figure key={index}>{lot?.imageUrl&&<img src={lot.imageUrl} alt="" loading="lazy"/>}<figcaption>{index===0?(rtl?'مزاد أنبل رقم الخيري':'Most Noble Number charity auction'):index===1?(rtl?'وقف المليار وجبة':'One Billion Meals Endowment Auction'):(rtl?'ذكريات الإمارات للمزادات':'Emirates Auction memories')}</figcaption></figure>;})}</div></div></section>
+      <section className="ea-media"><div className="ea-content-wrap"><div className="ea-title-row"><div><span>{t.newsEyebrow}</span><h2>{t.newsTitle}</h2></div><a href="#news">{t.moreNews}<Icon name="arrow" size={17}/></a></div><div className="ea-news-grid" id="news">{newsEntries.map((item,index)=>{const published = Number.isFinite(Date.parse(item.date)) ? new Date(item.date).toLocaleDateString(rtl?'ar-AE':'en-AE',{day:'numeric',month:'long',year:'numeric'}) : item.date; const title = rtl && item.titleAr ? item.titleAr : item.title; return <article key={item.id || `${title}-${index}`} className={index===0?'featured':''}>{item.imageUrl&&<img src={item.imageUrl} alt={title} loading="lazy"/>}<div><time>{published}</time><h3>{title}</h3>{index===0&&<p>{item.sourceTitle ? `${rtl?'المصدر':'Source'}: ${item.sourceTitle}` : item.description}</p>}</div></article>;})}</div><div className="ea-title-row gallery-title"><div><span>{t.galleryEyebrow}</span><h2>{t.galleryTitle}</h2></div><a href="#gallery">{t.viewAlbums}<Icon name="arrow" size={17}/></a></div><div className="ea-gallery-grid" id="gallery">{galleryEntries.map((item)=><figure key={item.id}>{item.imageUrl&&<img src={item.imageUrl} alt={item.title} loading="lazy"/>}<figcaption>{item.title}</figcaption></figure>)}</div></div></section>
 
       <section className="ea-sell" id="sell"><div className="ea-content-wrap"><div className="ea-title-block light"><span>{t.sellEyebrow}</span><h2>{t.sellTitle}</h2></div><div className="ea-sell-grid"><nav>{sellCategories.map((title,index)=><button className={activeSell===index?'active':''} onClick={()=>setActiveSell(index)} key={title}><span>0{index+1}</span>{title}<b>+</b></button>)}</nav><article style={imageLots[24+activeSell]?.imageUrl?{backgroundImage:`linear-gradient(90deg,rgba(6,7,8,.9),rgba(6,7,8,.25)),url(${imageLots[24+activeSell].imageUrl})`}:undefined}><span>0{activeSell+1} / 04</span><h3>{sellCategories[activeSell]}</h3><p>{rtl?'استفد من أفضل قيمة لمقتنياتك من خلال منصتنا الموثوقة، وتمتع بعملية بيع منظمة وسلسة حتى النهاية.':'Benefit from the best value for your assets through our trusted platform and enjoy an organized, seamless selling journey from start to finish.'}</p><a href="#contact">{t.sellNow}<Icon name="arrow" size={17}/></a></article></div></div></section>
 
-      <section className="ea-faq" id="faq"><div className="ea-content-wrap"><div><h2>{t.faqTitle}<br/><strong>{t.faqSubtitle}</strong></h2><p>{t.faqIntro}</p></div><div className="ea-faq-list">{faqs[language].map(([question,answer],index)=><article className={activeFaq===index?'active':''} key={question}><button onClick={()=>setActiveFaq(index)} aria-expanded={activeFaq===index}>{question}<span>{activeFaq===index?'−':'+'}</span></button>{activeFaq===index&&<p>{answer}</p>}</article>)}<a href="#contact">{t.readAll}<Icon name="arrow" size={17}/></a></div></div></section>
+      <section className="ea-faq" id="faq"><div className="ea-content-wrap"><div><h2>{t.faqTitle}<br/><strong>{t.faqSubtitle}</strong></h2><p>{t.faqIntro}</p></div><div className="ea-faq-list">{faqEntries.map((item,index)=><article className={activeFaq===index?'active':''} key={item.id || item.question}><button onClick={()=>setActiveFaq(index)} aria-expanded={activeFaq===index}>{item.question}<span>{activeFaq===index?'−':'+'}</span></button>{activeFaq===index&&<p>{item.answer}</p>}</article>)}<a href="#contact">{t.readAll}<Icon name="arrow" size={17}/></a></div></div></section>
     </main>
 
     <footer className="ea-footer" id="contact"><div className="ea-content-wrap"><div className="ea-footer-links"><section><h3>{t.footerAbout}</h3><a href="#about">{t.about}</a><a href="#story">{t.storyTitle}</a><a href="#news">{t.newsTitle}</a><a href="#contact">{t.findUs}</a></section><section><h3>{t.footerAuctions}</h3>{categories.slice(0,7).map((category)=><a href="#categories" key={category.id}>{localizedCategory(category.title,language)}</a>)}</section><section><h3>{t.footerHelp}</h3><a href="#faq">{t.help}</a><a href="#faq">{rtl?'الأسئلة الشائعة':'FAQ'}</a><a href="#contact">{t.contact}</a></section><section><h3>{t.footerQuick}</h3><a href="#sell">{t.sell}</a><a href="#categories">{t.requestPlate}</a><a href="#categories">{t.requestPackage}</a></section><section className="ea-help-card"><h3>{t.available247}</h3><p>UAE 600 545 454</p><p>support@emiratesauction.com</p></section></div><div className="ea-footer-social"><div><h3>{t.contact}</h3><p>{rtl?'تابعنا واكتشف أكبر منصة مزادات في المنطقة.':'Follow our channels and discover the region’s trusted auction marketplace.'}</p></div><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/></div></div><div className="ea-footer-bottom"><div className="ea-content-wrap"><span>© {new Date().getFullYear()} {t.copyright}</span><span>{rtl?'الدرهم الإماراتي · التسوية بالعملات الرقمية':'AED · Crypto settlement rails'}</span><a href={rtl?'/' : '/ar'}>{rtl?'English':'العربية'}</a></div></div></footer>
@@ -281,10 +397,17 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
       {error && <div className="alert alert-error">{error}</div>}<button className="black-button" disabled={busy}>{busy ? (rtl?'يرجى الانتظار…':'Please wait…') : authMode === 'identify' ? (rtl?'متابعة':'Continue') : authMode === 'login' ? (rtl?'تسجيل الدخول':'Sign In') : (rtl?'إنشاء الحساب وتسجيل الدخول':'Create Account & Sign In')}</button>{authMode !== 'identify' && <p className="form-switch"><button type="button" onClick={startIdentityCheck}>{rtl?'استخدام رقم عميل أو هاتف أو بريد مختلف':'Use a different ID, mobile or email'}</button></p>}
     </form></Modal>}
 
-    {selectedLot && <Modal rtl={rtl} title={selectedLot.title} close={() => { setSelectedLot(null); setError(''); }} wide><div className="lot-dialog"><div className="lot-dialog-image">{selectedLot.imageUrl ? <img src={selectedLot.imageUrl} alt={selectedLot.title}/> : <Icon name={categoryIcon(selectedLot.category)} size={88}/>}</div><div className="lot-dialog-copy"><div className="dialog-tags"><Status tone="red">{localizedCategory(selectedLot.category,language)}</Status><Status>{selectedLot.status}</Status></div><p>{selectedLot.description || (rtl?'راجع تفاصيل العنصر ومتطلبات التأمين وشروط المزايدة قبل المتابعة.':'Review the lot details, deposit requirement and bidding conditions before continuing.')}</p><dl><div><dt>{rtl?'السعر الحالي':'Current price'}</dt><dd>{money(selectedLot.currentPrice)}</dd></div><div><dt>{rtl?'الحد الأدنى للمزايدة التالية':'Next minimum bid'}</dt><dd>{money(selectedLot.winnerId ? selectedLot.currentPrice + selectedLot.increment : selectedLot.startPrice)}</dd></div><div><dt>{rtl?'قاعدة التأمين':'Deposit rule'}</dt><dd>{selectedLot.depositBps / 100}% · {rtl?'الحد الأدنى':'minimum'} {money(selectedLot.minimumDeposit)}</dd></div><div><dt>{rtl?'استخدام التأمين':'Deposit use'}</dt><dd>{selectedLot.depositUsage === 'checkout_eligible' ? (rtl?'يُخصم عند الدفع':'Applied at checkout') : (rtl?'تأمين للمزايدة فقط':'Bidding security only')}</dd></div><div><dt>{rtl?'التمديد التلقائي':'Automatic extension'}</dt><dd>{selectedLot.extensionMinutes} {rtl?'دقيقة أثناء فتح المزايدة':'minutes while bidding is open'}</dd></div><div><dt>{rtl?'موعد الإغلاق':'Closes'}</dt><dd>{date(selectedLot.endsAt)}</dd></div></dl>
+    {selectedLot && <Modal rtl={rtl} title={selectedLot.title} close={() => { setSelectedLot(null); setError(''); }} wide><div className="lot-dialog"><div className="lot-dialog-image">{selectedLot.imageUrl ? <img src={selectedLot.imageUrl} alt={selectedLot.title}/> : <Icon name={categoryIcon(selectedLot.category)} size={88}/>}</div><div className="lot-dialog-copy"><div className="dialog-tags"><Status tone="red">{localizedCategory(selectedLot.category,language)}</Status><Status>{selectedLot.status}</Status></div><p>{selectedLot.description || (rtl?'راجع تفاصيل العنصر ومتطلبات التأمين وشروط المزايدة قبل المتابعة.':'Review the lot details, deposit requirement and bidding conditions before continuing.')}</p>{plateMeta(selectedLot,platePreview) && <button className="ea-detail-plate-preview" onClick={()=>openPlatePreview(selectedLot)}><Icon name="car" size={18}/>{rtl?'عرض اللوحة على السيارة':'View plate on car'}<Icon name="arrow" size={16}/></button>}<dl><div><dt>{rtl?'السعر الحالي':'Current price'}</dt><dd>{money(selectedLot.currentPrice)}</dd></div><div><dt>{rtl?'الحد الأدنى للمزايدة التالية':'Next minimum bid'}</dt><dd>{money(selectedLot.winnerId ? selectedLot.currentPrice + selectedLot.increment : selectedLot.startPrice)}</dd></div><div><dt>{rtl?'قاعدة التأمين':'Deposit rule'}</dt><dd>{selectedLot.depositBps / 100}% · {rtl?'الحد الأدنى':'minimum'} {money(selectedLot.minimumDeposit)}</dd></div><div><dt>{rtl?'استخدام التأمين':'Deposit use'}</dt><dd>{selectedLot.depositUsage === 'checkout_eligible' ? (rtl?'يُخصم عند الدفع':'Applied at checkout') : (rtl?'تأمين للمزايدة فقط':'Bidding security only')}</dd></div><div><dt>{rtl?'التمديد التلقائي':'Automatic extension'}</dt><dd>{selectedLot.extensionMinutes} {rtl?'دقيقة أثناء فتح المزايدة':'minutes while bidding is open'}</dd></div><div><dt>{rtl?'موعد الإغلاق':'Closes'}</dt><dd>{date(selectedLot.endsAt)}</dd></div></dl>
           <div className="policy-note"><strong>{rtl?'سياسة عدم الدفع':'Non-payment policy'}</strong><p>{rtl?`لدى الفائز 48 ساعة بعد اعتماد النتيجة للدفع. قد يؤدي التخلف إلى إلغاء الشراء وإعادة العنصر، ومصادرة 100% من مبلغ التأمين، وإضافة غرامة ${selectedLot.nonPaymentPenaltyBps / 100}% و${money(selectedLot.lateFeeDaily)} عن كل يوم تأخير مطبق، مع إمكانية اتخاذ الإجراءات القانونية.`:`The winner has 48 hours after adjudication to pay. Default may cancel the purchase and relist the lot, forfeit 100% of the security deposit, add a ${selectedLot.nonPaymentPenaltyBps / 100}% penalty and ${money(selectedLot.lateFeeDaily)} for each applicable late day. Civil or criminal action may also be pursued under the platform terms.`}</p></div>
           {selectedLot.mode === 'auction' && selectedLot.status === 'open' ? <form className="bid-form" onSubmit={placeBid}><label>{rtl?'مزايدتك (درهم)':'Your bid (AED)'}<input name="amount" inputMode="decimal" defaultValue={((selectedLot.winnerId ? selectedLot.currentPrice + selectedLot.increment : selectedLot.startPrice)/100).toFixed(2)} required/></label><div className="deposit-preview">{rtl?'الرصيد المطلوب يبدأ من':'Required balance from'} <strong>{money(requiredDeposit(selectedLot, selectedLot.winnerId ? selectedLot.currentPrice + selectedLot.increment : selectedLot.startPrice))}</strong></div>{error && <div className="alert alert-error">{error}</div>}<button className="red-button" disabled={busy}>{user ? (rtl?'تأكيد المزايدة':'Confirm bid') : (rtl?'سجل الدخول للمزايدة':'Sign in to bid')}</button></form> : <div className="closed-note"><Icon name="clock"/> {rtl?'هذا العنصر لا يقبل المزايدات حالياً.':'This lot is not currently accepting bids.'}</div>}
         </div></div></Modal>}
+
+    {plateCarLot && selectedPlate && selectedMake && selectedModel && <Modal rtl={rtl} title={rtl?'عرض اللوحة على السيارة':'View plate on car'} close={() => setPlateCarLot(null)} wide><div className="ea-plate-preview">
+      <div className="ea-plate-selectors"><label><span>{rtl?'الشركة المصنعة':'Make'}</span><select value={selectedMake.id} onChange={(event)=>{const make=platePreview?.makes.find((item)=>item.id===Number(event.target.value));setPlateMakeId(Number(event.target.value));setPlateModelId(make?.models[0]?.id??'');}}>{platePreview?.makes.map((make)=><option key={make.id} value={make.id}>{make.title}</option>)}</select></label><label><span>{rtl?'الموديل':'Model'}</span><select value={selectedModel.id} onChange={(event)=>setPlateModelId(event.target.value)}>{selectedMake.models.map((model)=><option key={model.id} value={model.id}>{model.title}</option>)}</select></label></div>
+      <div className="ea-plate-preview-stage">{plateLoading&&<div className="ea-plate-loader"><i/><span>{rtl?'جارٍ تجهيز المعاينة…':'Preparing preview…'}</span></div>}<img key={selectedPlateImage} src={selectedPlateImage} alt={`${plateCarLot.title} · ${selectedModel.title}`} onLoad={()=>setPlateLoading(false)} onError={()=>setPlateLoading(false)}/></div>
+      <div className="ea-plate-preview-note"><span className="ea-mini-plate"><i>{selectedPlate.code}</i><b>{selectedPlate.number}</b></span><div><strong>{plateCarLot.title}</strong><small>{rtl?'معاينة توضيحية على السيارة المختارة':'Illustrative preview on the selected vehicle'}</small></div></div>
+      {error&&<div className="alert alert-error">{error}</div>}<button className="ea-download-preview" onClick={downloadPlatePreviewImage} disabled={plateDownloading}><Icon name="arrow" size={18}/>{plateDownloading?(rtl?'جارٍ تجهيز الصورة…':'Preparing image…'):(rtl?'تنزيل الصورة':'Download Image')}</button>
+    </div></Modal>}
 
     {accountOpen && user && <Modal rtl={rtl} title={rtl?'حسابي':'My account'} close={() => { setAccountOpen(false); setError(''); }} wide><div className="account-head"><div className="account-person"><span><Icon name="account" size={28}/></span><div><strong>{user.name}</strong><small>{rtl?'رقم العميل':'Customer ID'} {user.username ?? user.id} · {user.email} · {user.phone}</small></div></div><button className="text-button" onClick={logout}>{rtl?'تسجيل الخروج':'Sign out'}</button></div>
       <div className="wallet-cards"><div><span>{rtl?'الرصيد المتاح':'Available balance'}</span><strong>{money(account?.wallet.available ?? 0)}</strong><small>{rtl?'القيمة المرجعية بالدرهم':'AED reference value'}</small></div><div><span>{rtl?'محجوز للمزايدات':'Reserved for bids'}</span><strong>{money(account?.wallet.reserved ?? 0)}</strong><small>{rtl?'متغير وفق قواعد العنصر':'Variable by lot rules'}</small></div><div className="wallet-actions"><button className="red-button" onClick={() => { setPaymentFor('funds'); setIntent(null); }}>{rtl?'إضافة رصيد':'Add funds'}</button></div></div>

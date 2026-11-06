@@ -7,6 +7,9 @@
     "build": "next build",
     "preview": "wrangler dev --port 3000",
     "deploy": "npm run build && wrangler deploy",
+    "sync:v1-home": "node scripts/sync-v1-home.mjs",
+    "sync:v1-plates": "node scripts/sync-v1-plate-preview.mjs",
+    "sync:v1": "npm run sync:v1-home && npm run sync:v1-plates",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts"
   },

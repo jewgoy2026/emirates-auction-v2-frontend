@@ -1,0 +1,399 @@
+{
+  "generatedAt": "2026-11-06T16:15:33.487Z",
+  "source": "https://apiv8.emiratesauction.net/api",
+  "formats": [
+    {
+      "category": "Sharjah Plates",
+      "auctionTypeId": 23,
+      "suffix": "shjl25",
+      "plateType": 0
+    },
+    {
+      "category": "Ajman Plates",
+      "auctionTypeId": 27,
+      "suffix": "ajmnl",
+      "plateType": 0
+    },
+    {
+      "category": "RAK Plates",
+      "auctionTypeId": 16,
+      "suffix": "raknl",
+      "plateType": 0
+    },
+    {
+      "category": "UAQ Plates",
+      "auctionTypeId": 18,
+      "suffix": "umqnl26",
+      "plateType": 0
+    },
+    {
+      "category": "Fujairah Plates",
+      "auctionTypeId": 12,
+      "suffix": "fujnl",
+      "plateType": 0
+    }
+  ],
+  "makes": [
+    {
+      "id": 144,
+      "title": "Range Rover",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/144.png",
+      "models": [
+        {
+          "id": "144:0",
+          "title": "2024 Range Rover Sport SV",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1070&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "144:1",
+          "title": "2023 Range Rover SV",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1028&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Bugatti",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/17.png",
+      "models": [
+        {
+          "id": "17:0",
+          "title": "2026 Bugatti Tourbillon",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1076&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "17:1",
+          "title": "2025 Bugatti Brouillard",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1143&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "17:2",
+          "title": "2024 Bugatti W16 Mistral",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1130&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 127,
+      "title": "Tesla",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/127.png",
+      "models": [
+        {
+          "id": "127:0",
+          "title": "2025 Tesla Cybertruck",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1126&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "127:1",
+          "title": "2024 Tesla Model 3",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1125&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Audi",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/9.png",
+      "models": [
+        {
+          "id": "9:0",
+          "title": "2026 Audi RS3 competition limited",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1145&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "9:1",
+          "title": "2025 Audi RS E Tron",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1082&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "9:2",
+          "title": "2024 Audi RS4 Avant",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1083&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Bentley",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/11.png",
+      "models": [
+        {
+          "id": "11:0",
+          "title": "2026 Bentley Continental GT Supersports",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1146&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "11:1",
+          "title": "2025 Bentley Continental Speed GT",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1065&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "11:2",
+          "title": "2024 Bentley Bentayga",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1074&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "title": "Land Rover",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/67.png",
+      "models": [
+        {
+          "id": "67:0",
+          "title": "2026 Land Rover Defender Octa",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1147&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "67:1",
+          "title": "2025 Land Rover Defender Octa",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1128&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 86,
+      "title": "Nissan",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/86.png",
+      "models": [
+        {
+          "id": "86:0",
+          "title": "2027 Nissan Z NISMO",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1149&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "86:1",
+          "title": "2025 Nissan Patrol",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1133&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "86:2",
+          "title": "2024 Nissan GT-R",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1123&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "title": "Mercedes",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/78.png",
+      "models": [
+        {
+          "id": "78:0",
+          "title": "2027 Mercedes-Benz GLE",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1150&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "78:1",
+          "title": "2025 Mercedes AMG GT63",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1077&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "78:2",
+          "title": "2024 Mercedes AMG CLE53",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1078&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "78:3",
+          "title": "2024 Mercedes Benz S63 AMG E Performance",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1129&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "BMW",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/14.png",
+      "models": [
+        {
+          "id": "14:0",
+          "title": "2027 BMW i3",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1151&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "14:1",
+          "title": "2025 BMW M4 CS",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1088&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "14:2",
+          "title": "2024 BMW i5",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1089&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "title": "Maybach",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/74.png",
+      "models": [
+        {
+          "id": "74:0",
+          "title": "2027 Mercedes-Maybach S 680",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1153&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "74:1",
+          "title": "2025 Mercedes Maybach SL Monogram",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1075&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "title": "Lexus",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/68.png",
+      "models": [
+        {
+          "id": "68:0",
+          "title": "2026 Lexus ES",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1154&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "68:1",
+          "title": "2024 Lexus GX 550 Overtrail",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1132&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "title": "Ford",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/45.png",
+      "models": [
+        {
+          "id": "45:0",
+          "title": "2026 Ford Bronco 60th Anniversary Edition",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1155&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "45:1",
+          "title": "2023 Ford Ranger Raptor",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1100&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "title": "Koenigsegg",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/62.png",
+      "models": [
+        {
+          "id": "62:0",
+          "title": "2027 Koenigsegg CCGT1",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1157&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "62:1",
+          "title": "2026 Koenigsegg Sadairs Spear",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1139&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "62:2",
+          "title": "2024 Koenigsegg Jesko Absolut",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1159&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "62:3",
+          "title": "2023 Koenigsegg Gemera",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1085&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 108,
+      "title": "Rolls Royce",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/108.png",
+      "models": [
+        {
+          "id": "108:0",
+          "title": "2026 Rolls Royce Spectre Black Badge",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1141&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "108:1",
+          "title": "2023 Rolls Royce Spectre ",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1029&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Aston Martin",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/8.png",
+      "models": [
+        {
+          "id": "8:0",
+          "title": "2026 Aston Martin Vantage S",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1142&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "8:1",
+          "title": "2025 Aston Martin Vantage",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1079&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "title": "Maserati",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/73.png",
+      "models": [
+        {
+          "id": "73:0",
+          "title": "2026 Maserati MCPura Cielo",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1144&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "73:1",
+          "title": "2025 Maserati GranCabrio Folgore",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1086&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "title": "Lamborghini",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/65.png",
+      "models": [
+        {
+          "id": "65:0",
+          "title": "2026 Lamborghini Fenomeno",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1138&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "65:1",
+          "title": "2025 Lamborghini Temerario",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1080&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "65:2",
+          "title": "2024 Lamborghini Revuelto",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1121&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "title": "Ferrari",
+      "logoUrl": "https://cdn.emiratesauction.com/static/AppsAssets/makes/41.png",
+      "models": [
+        {
+          "id": "41:0",
+          "title": "2026 Ferrari Amalfi Spider",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1140&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "41:1",
+          "title": "2025 Ferrari 12Cilindri",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1071&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        },
+        {
+          "id": "41:2",
+          "title": "2024 Ferrari SP 8",
+          "imageTemplate": "https://apiv8.emiratesauction.net/api/Image/PlateOnCar?image=1072&auctionTypeId=[at]&plateno=[pn]&code=[c]&platetype=[pt]&width=[w]&height=[h]&platform=web"
+        }
+      ]
+    }
+  ]
+}
