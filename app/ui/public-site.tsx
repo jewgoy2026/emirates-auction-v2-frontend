@@ -97,6 +97,19 @@ function plateCardUrl(plate: PlateMeta) {
   return `/api/v1/public/plate-image?${new URLSearchParams({ auctionTypeId: String(plate.auctionTypeId), plateno: plate.number, code: plate.code })}`;
 }
 
+function bestGalleryImages(images:Array<string|undefined|null>){
+  const best=new Map<string,{url:string;quality:number}>();
+  for(const raw of images){
+    const url=String(raw??'').trim();if(!url)continue;
+    let identity=url.split('?')[0]!,quality=0;
+    try{const parsed=new URL(url),asset=parsed.pathname.match(/\/media\/([^/]+)/)?.[1],size=parsed.pathname.match(/w_(\d+),h_(\d+)/);identity=asset?`${parsed.origin}/media/${asset}`:`${parsed.origin}${parsed.pathname}`;quality=size?Number(size[1])*Math.max(Number(size[2]),Number(size[1])):0;}catch{}
+    const current=best.get(identity);if(!current||quality>=current.quality)best.set(identity,{url,quality});
+  }
+  return Array.from(best.values(),(item)=>item.url);
+}
+
+function lotTermItems(value:unknown){return String(value??'').split(/\s*\|\s*/).map((item)=>item.trim()).filter(Boolean);}
+
 function PlateVisual({ plate, title, className = '' }: { plate: PlateMeta; title: string; className?: string }) {
   const [imageLoaded,setImageLoaded]=useState(false);
   return <span className={`ea-plate-card-visual ${className}`} data-image-loaded={imageLoaded ? 'true' : 'false'}>
@@ -315,23 +328,22 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   }, [lots,user,directOrder?.id,loading]);
   useEffect(() => {
     if (!selectedLot) { setGalleryImages([]); setGalleryIndex(0); setGalleryThumbLimit(48); setGalleryLoading(false); setVehicleSpecs([]); setSourceDescription(''); return; }
-    const primary = Array.from(new Set([selectedLot.imageUrl, ...selectedLot.mediaUrls].filter(Boolean)));
+    const primary = bestGalleryImages([...selectedLot.mediaUrls,selectedLot.imageUrl]);
     setGalleryImages(primary); setGalleryIndex(0);
     const selectedPlate = plateMeta(selectedLot, platePreview);
     if (selectedPlate) {
-      const carImages = (platePreview?.makes.flatMap((make) => make.models) ?? []).slice(0,4).map((model) => plateWorkerUrl(model.imageTemplate, selectedPlate, 900, 700));
-      setGalleryImages(Array.from(new Set([plateCardUrl(selectedPlate), ...carImages]))); return;
+      setGalleryImages([plateCardUrl(selectedPlate)]); return;
     }
     const controller = new AbortController(); setGalleryLoading(true);
     api<{lot:unknown}>(`/v1/auction/lots/${selectedLot.id}`).then(async(data)=>{
       const detailed=normalizeLot(data.lot); setSelectedLot((current)=>current?.id===detailed.id?detailed:current);
-      const persisted=Array.from(new Set([detailed.imageUrl,...detailed.mediaUrls].filter(Boolean))); setGalleryImages(persisted); setGalleryIndex(0);
+      const persisted=bestGalleryImages([...detailed.mediaUrls,detailed.imageUrl]); setGalleryImages(persisted); setGalleryIndex(0);
       const specifications=Array.isArray(detailed.detailData.specifications)?detailed.detailData.specifications.filter((item:unknown)=>item&&typeof item==='object').map((item:any)=>({label:String(item.label??''),value:String(item.value??'')})).filter((item:{label:string;value:string})=>item.label&&item.value):[];
       setVehicleSpecs(specifications); setSourceDescription(detailed.description);
       if((persisted.length<=1||!detailed.description)&&detailed.sourceUrl){
         const response=await fetch(`/api/v1/public/lot-gallery?source=${encodeURIComponent(detailed.sourceUrl)}`,{signal:controller.signal});
         const fallback=response.ok?await response.json() as {items?:string[];specifications?:Array<{label:string;value:string}>;description?:string}:{items:[]};
-        setGalleryImages(Array.from(new Set([...persisted,...(fallback.items??[])]))); if(!specifications.length)setVehicleSpecs(fallback.specifications??[]); if(!detailed.description)setSourceDescription(fallback.description??'');
+        setGalleryImages(bestGalleryImages([...persisted,...(fallback.items??[])])); if(!specifications.length)setVehicleSpecs(fallback.specifications??[]); if(!detailed.description)setSourceDescription(fallback.description??'');
       }
     }).catch(()=>undefined).finally(() => setGalleryLoading(false));
     return () => controller.abort();
@@ -602,7 +614,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
         {selectedLot.category==='Vehicles & Machinery'&&<article className="ea-product-section ea-documents-section"><h2><Icon name="shield" size={21}/>{rtl?'المستندات':'Documents'}</h2><p>{rtl?'راجع تقرير فحص المركبة قبل تقديم المزايدة.':'Review the vehicle inspection report before bidding.'}</p>{selectedLot.hasCarCheck?<a className="ea-car-check-download" href={`/api/v1/auction/lots/${selectedLot.id}/car-check`} download><Icon name="shield" size={19}/><span><b>{rtl?'تقرير الفحص':'Inspection Report'}</b><small>{rtl?'شهادة فحص المركبة بصيغة PDF':'Vehicle inspection certificate in PDF'}</small></span><Icon name="arrow" size={17}/></a>:<div className="ea-document-pending"><Icon name="clock" size={18}/>{rtl?'يتم تجهيز تقرير الفحص لهذا المركبة.':'The inspection report is being prepared for this vehicle.'}</div>}</article>}
         {selectedLot.documents.length>0&&<article className="ea-product-section ea-documents-section"><h2><Icon name="shield" size={21}/>{rtl?'المستندات المرفقة':'Attached Documents'}</h2><p>{rtl?'راجع مستندات العنصر قبل تقديم عرضك.':'Review the lot documents before placing an offer.'}</p><div className="ea-lot-documents">{selectedLot.documents.map((document)=><a className="ea-car-check-download" key={document.id} href={`/api/v1/auction/lots/${selectedLot.id}/documents/${document.id}`} download><Icon name="shield" size={19}/><span><b>{document.title}</b><small>{document.documentType.toUpperCase()}</small></span><Icon name="arrow" size={17}/></a>)}</div></article>}
         {selectedMapPoint&&<article className="ea-product-section ea-location-section"><h2><Icon name="grid" size={21}/>{selectedLot.category==='Properties'?(rtl?'موقع العقار':'Property Location'):(rtl?'موقع المعاينة':'Inspection Location')}</h2><p>{selectedMapPoint.label}</p><RealMap latitude={selectedMapPoint.latitude} longitude={selectedMapPoint.longitude} label={selectedMapPoint.label}/></article>}
-        <article className="ea-product-section ea-product-terms"><h2><Icon name="shield" size={21}/>{rtl?'الشروط والأحكام':'Terms and Conditions'}</h2><div>{selectedLot.detailData.terms&&<details className="ea-imported-terms"><summary>{rtl?'شروط العنصر من سجل المزاد':'Lot-specific auction terms'}</summary><p>{String(selectedLot.detailData.terms)}</p></details>}<p>{rtl?'يجب إتمام الدفع خلال 48 ساعة من اعتماد النتيجة. يطبق مبلغ التأمين المحدد لهذا العنصر وفق طريقة الاستخدام الموضحة.':'Payment must be completed within 48 hours of adjudication. The lot security deposit is applied according to the usage rule shown for this item.'}</p><p>{rtl?`قد يؤدي عدم الدفع إلى إلغاء الشراء وإعادة عرض العنصر، ومصادرة كامل التأمين، وغرامة ${selectedLot.nonPaymentPenaltyBps/100}% و${money(selectedLot.lateFeeDaily)} عن كل يوم تأخير مطبق، بالإضافة إلى الإجراءات القانونية.`:`Non-payment may cancel the purchase and relist the lot, forfeit the full security deposit, add a ${selectedLot.nonPaymentPenaltyBps/100}% penalty and ${money(selectedLot.lateFeeDaily)} per applicable late day, in addition to legal action.`}</p></div></article>
+        <article className="ea-product-section ea-product-terms"><h2><Icon name="shield" size={21}/>{rtl?'الشروط والأحكام':'Terms and Conditions'}</h2><div>{selectedLot.detailData.terms&&<details className="ea-imported-terms"><summary>{rtl?'شروط العنصر من سجل المزاد':'Lot-specific auction terms'}</summary><div className="ea-imported-terms-list">{lotTermItems(selectedLot.detailData.terms).map((item,index)=><p key={`${index}-${item.slice(0,24)}`}>{item}</p>)}</div></details>}<p>{rtl?'يجب إتمام الدفع خلال 48 ساعة من اعتماد النتيجة. يطبق مبلغ التأمين المحدد لهذا العنصر وفق طريقة الاستخدام الموضحة.':'Payment must be completed within 48 hours of adjudication. The lot security deposit is applied according to the usage rule shown for this item.'}</p><p>{rtl?`قد يؤدي عدم الدفع إلى إلغاء الشراء وإعادة عرض العنصر، ومصادرة كامل التأمين، وغرامة ${selectedLot.nonPaymentPenaltyBps/100}% و${money(selectedLot.lateFeeDaily)} عن كل يوم تأخير مطبق، بالإضافة إلى الإجراءات القانونية.`:`Non-payment may cancel the purchase and relist the lot, forfeit the full security deposit, add a ${selectedLot.nonPaymentPenaltyBps/100}% penalty and ${money(selectedLot.lateFeeDaily)} per applicable late day, in addition to legal action.`}</p></div></article>
       </section><aside className="ea-product-sidebar">
         <section className="ea-bid-panel"><div className="ea-bid-head"><span>{selectedLot.mode==='direct'?(rtl?'السعر الثابت':'Fixed Price'):(rtl?'السعر الحالي':'Current Price')}</span><strong>{money(selectedLot.currentPrice)}</strong></div>{selectedLot.mode==='auction'&&<div className="ea-minimum"><span>{rtl?'الحد الأدنى للزيادة':'Min. Increment'}</span><b>{money(selectedLot.increment)}</b></div>}
           <div className="ea-bid-stats">{selectedLot.mode==='auction'&&<div><Icon name="gavel"/><span>{rtl?'عدد المزايدات':'No. of Bids'}<b>{selectedLot.bidCount}</b></span></div>}{selectedLot.mode==='auction'&&<div><Icon name="clock"/><span>{rtl?'الوقت المتبقي':'Time remaining'}<b>{remaining(selectedLot.endsAt,now)}</b></span></div>}<div><Icon name="calendar"/><span>{rtl?'ينتهي في':'Ends on'}<b>{date(selectedLot.endsAt)}</b></span></div></div>
