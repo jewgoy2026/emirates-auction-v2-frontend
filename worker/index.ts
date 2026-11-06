@@ -43,6 +43,31 @@ async function plateImage(request: Request) {
     return new Response(request.method === 'HEAD' ? null : response.body, { status: 200, headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800', 'X-Content-Type-Options': 'nosniff' } });
   } catch { return json('Plate image is temporarily unavailable.', 503); }
 }
+async function mapTile(request: Request) {
+  if (!['GET','HEAD'].includes(request.method)) return json('Method not allowed.',405);
+  const pathname=new URL(request.url).pathname,match=pathname.match(/^\/api\/v1\/public\/map-tile\/(\d{1,2})\/(\d{1,7})\/(\d{1,7})\.png$/);
+  if(!match)return json('Invalid map tile request.',400);
+  const zoom=Number(match[1]),x=Number(match[2]),y=Number(match[3]),limit=2**zoom;
+  if(!Number.isInteger(zoom)||zoom<3||zoom>18||x<0||y<0||x>=limit||y>=limit)return json('Invalid map tile request.',400);
+  try{
+    const response=await fetch(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`,{method:request.method,headers:{Accept:'image/png','User-Agent':'EmiratesAuctionV2/1.0 (map rendering)'},signal:AbortSignal.timeout(10_000)});
+    if(!response.ok)return json('Map tile is temporarily unavailable.',502);
+    return new Response(request.method==='HEAD'?null:response.body,{status:200,headers:{'Content-Type':'image/png','Cache-Control':'public, max-age=86400, stale-while-revalidate=604800','X-Content-Type-Options':'nosniff'}});
+  }catch{return json('Map tile is temporarily unavailable.',503);}
+}
+async function geocode(request:Request){
+  if(request.method!=='GET')return json('Method not allowed.',405);
+  const query=(new URL(request.url).searchParams.get('q')??'').trim();
+  if(query.length<3||query.length>160)return json('Enter a valid location.',400);
+  const upstream=new URL('https://nominatim.openstreetmap.org/search');upstream.searchParams.set('q',query);upstream.searchParams.set('format','jsonv2');upstream.searchParams.set('limit','5');upstream.searchParams.set('countrycodes','ae');upstream.searchParams.set('addressdetails','1');
+  try{
+    const response=await fetch(upstream,{headers:{Accept:'application/json','Accept-Language':'en','User-Agent':'EmiratesAuctionV2/1.0 (delivery location search)'},signal:AbortSignal.timeout(10_000)});
+    if(!response.ok)return json('Location search is temporarily unavailable.',502);
+    const raw=await response.json() as Array<{display_name?:unknown;lat?:unknown;lon?:unknown}>;
+    const items=raw.slice(0,5).map((item)=>({label:String(item.display_name??'').slice(0,500),latitude:Number(item.lat),longitude:Number(item.lon)})).filter((item)=>item.label&&Number.isFinite(item.latitude)&&Number.isFinite(item.longitude));
+    return Response.json({items},{headers:{'Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'}});
+  }catch{return json('Location search is temporarily unavailable.',503);}
+}
 async function lotGallery(request: Request) {
   if (request.method !== 'GET') return json('Method not allowed.', 405);
   const source = new URL(request.url).searchParams.get('source') ?? '';
@@ -124,6 +149,8 @@ export default { async fetch(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   if (url.pathname === '/api/v1/public/plate-preview') return platePreview(request);
   if (url.pathname === '/api/v1/public/plate-image') return plateImage(request);
+  if (url.pathname.startsWith('/api/v1/public/map-tile/')) return mapTile(request);
+  if (url.pathname === '/api/v1/public/geocode') return geocode(request);
   if (url.pathname === '/api/v1/public/lot-gallery') return lotGallery(request);
   if (url.pathname.startsWith('/api/')) return proxy(request, env);
   const response = await env.ASSETS.fetch(request), headers = new Headers(response.headers); for (const [key,value] of Object.entries(commonHeaders)) headers.set(key,value);
