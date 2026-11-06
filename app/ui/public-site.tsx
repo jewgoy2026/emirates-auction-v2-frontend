@@ -93,9 +93,10 @@ function plateCardUrl(plate: PlateMeta) {
 }
 
 function PlateVisual({ plate, title, className = '' }: { plate: PlateMeta; title: string; className?: string }) {
-  return <span className={`ea-plate-card-visual ${className}`}>
+  const [imageLoaded,setImageLoaded]=useState(false);
+  return <span className={`ea-plate-card-visual ${className}`} data-image-loaded={imageLoaded ? 'true' : 'false'}>
     <span className="ea-plate-art" aria-hidden="true"><small>UNITED ARAB EMIRATES</small><strong><i>{plate.code}</i>{plate.number}</strong></span>
-    <img src={plateCardUrl(plate)} alt={title} loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }}/>
+    <img src={plateCardUrl(plate)} alt={title} loading="lazy" onLoad={()=>setImageLoaded(true)} onError={(event) => { setImageLoaded(false); event.currentTarget.hidden = true; }}/>
   </span>;
 }
 
