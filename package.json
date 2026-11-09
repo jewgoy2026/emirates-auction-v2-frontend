@@ -16,9 +16,8 @@
   "dependencies": {
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.99.0",
-    "@tronweb3/walletconnect-tron": "^4.0.3",
     "@walletconnect/modal": "2.7.0",
-    "@walletconnect/solana-adapter": "^0.0.9",
+    "@walletconnect/modal-core": "2.7.0",
     "@walletconnect/universal-provider": "2.26.0",
     "buffer": "^6.0.3",
     "next": "16.4.5",
@@ -36,8 +35,5 @@
     "tsx": "^4.20.6",
     "typescript": "5.9.3",
     "wrangler": "4.158.0"
-  },
-  "overrides": {
-    "@reown/appkit": "1.8.20"
   }
 }

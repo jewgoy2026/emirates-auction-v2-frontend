@@ -1,5 +1,6 @@
 import type { WalletRequest } from './v2';
 import { Buffer } from 'buffer';
+import { connectPaymentWallet, withWalletTimeout } from './walletconnect-client';
 
 if (typeof globalThis !== 'undefined' && !('Buffer' in globalThis)) Object.assign(globalThis, { Buffer });
 
@@ -39,6 +40,8 @@ export type WalletPaymentResult = {
   walletName: string;
 };
 
+export type WalletPaymentOptions = { signal?: AbortSignal; onStage?: (stage: 'connecting' | 'approving') => void };
+
 const evmProviders = new Map<string, Eip6963Detail>();
 const tronProviders = new Map<string, { name: string; tronWeb: TronWebLike; request?: (args: { method: string }) => Promise<unknown> }>();
 const bitcoinProviders = new Map<string, { name: string; provider: BitcoinProvider }>();
@@ -64,7 +67,7 @@ function startEip6963Discovery() {
   }) as EventListener);
 }
 
-function transactionValue(request: WalletRequest) {
+export function transactionValue(request: WalletRequest) {
   const transaction = request.transaction ?? {};
   const value = typeof transaction.value === 'string' ? transaction.value : request.tokenIdentifier ? '0x0' : `0x${BigInt(request.amountAtomic).toString(16)}`;
   let data = typeof transaction.data === 'string' ? transaction.data : '0x';
@@ -106,7 +109,7 @@ function discoverTron(projectId: string) {
   const okxLink = current.okxwallet?.tronLink, okxTronWeb = okxLink?.tronWeb ?? current.okxwallet?.tronWeb;
   if (okxTronWeb && okxTronWeb !== tronWeb) tronProviders.set('tron:okx', { name: 'OKX Wallet', tronWeb: okxTronWeb, request: okxLink?.request?.bind(okxLink) });
   const choices: WalletChoice[] = Array.from(tronProviders, ([id, item]) => ({ id, name: item.name, detail: 'Installed TRON wallet', kind: 'installed' as const }));
-  if (projectId) choices.push({ id: 'tron:walletconnect', name: 'WalletConnect', detail: 'TronLink, Trust Wallet, OKX and compatible wallets', kind: 'walletconnect' });
+  if (projectId) choices.push({ id: 'tron:walletconnect', name: 'WalletConnect', detail: 'Scan QR or choose a TRON-compatible wallet', kind: 'walletconnect' });
   return choices;
 }
 
@@ -122,7 +125,7 @@ export async function discoverWalletChoices(request: WalletRequest, walletConnec
   if (typeof window === 'undefined') return [];
   if (request.family === 'evm') return discoverEvm(walletConnectProjectId);
   if (request.family === 'tron') return discoverTron(walletConnectProjectId);
-  if (request.family === 'solana' && walletConnectProjectId) return [{ id: 'solana:walletconnect', name: 'WalletConnect', detail: 'Phantom, Solflare, Backpack and compatible wallets', kind: 'walletconnect' }];
+  if (request.family === 'solana' && walletConnectProjectId) return [{ id: 'solana:walletconnect', name: 'WalletConnect', detail: 'Scan QR or choose a Solana-compatible wallet', kind: 'walletconnect' }];
   if (request.family === 'bitcoin') return discoverBitcoin();
   return [];
 }
@@ -142,65 +145,43 @@ async function payEvmInjected(request: WalletRequest, choice: WalletChoice): Pro
   return { txHash, senderAddress, walletName: choice.name };
 }
 
-async function payEvmWalletConnect(request: WalletRequest, choice: WalletChoice, projectId: string): Promise<WalletPaymentResult> {
-  if (!projectId) throw new Error('WalletConnect is temporarily unavailable.');
-  const [{ default: UniversalProvider }, { WalletConnectModal }] = await Promise.all([
-    import('@walletconnect/universal-provider'),
-    import('@walletconnect/modal'),
-  ]);
+async function payEvmWalletConnect(request: WalletRequest, choice: WalletChoice, projectId: string, options: WalletPaymentOptions): Promise<WalletPaymentResult> {
   if (!request.chainId || !/^\d+$/.test(request.chainId)) throw new Error('The payment network is missing its chain identifier.');
   const chain = `eip155:${request.chainId}`;
-  const modal = new WalletConnectModal({ projectId, enableExplorer: true, themeMode: 'light', themeVariables: { '--wcm-z-index': '10000' } });
-  const provider = await UniversalProvider.init({
-    projectId,
-    telemetryEnabled: false,
-    metadata: { name: 'Emirates Auction', description: 'Secure auction payment', url: window.location.origin, icons: [`${window.location.origin}/emirates-auction-logo.svg`] },
-  });
-  provider.on('display_uri', (uri: string) => { void modal.openModal({ uri }); });
-  try {
-    await provider.connect({ namespaces: { eip155: { methods: ['eth_sendTransaction', 'wallet_switchEthereumChain'], chains: [chain], events: ['chainChanged', 'accountsChanged'] } } });
-    modal.closeModal();
-    const account = provider.session?.namespaces.eip155?.accounts?.find((item) => item.startsWith(`${chain}:`));
-    const senderAddress = account?.split(':').at(-1) ?? '';
-    if (!senderAddress) throw new Error('The wallet did not provide an account on the selected network.');
-    const transaction = transactionValue(request);
-    const txHash = resultHash(await provider.request({ method: 'eth_sendTransaction', params: [{ from: senderAddress, ...transaction }] }, chain));
-    return { txHash, senderAddress, walletName: choice.name };
-  } finally {
-    modal.closeModal();
-  }
+  const { provider, senderAddress } = await connectPaymentWallet({ chain, method: 'eth_sendTransaction', projectId, signal: options.signal });
+  options.signal?.throwIfAborted();
+  options.onStage?.('approving');
+  const transaction = transactionValue(request);
+  const txHash = resultHash(await provider.request({ method: 'eth_sendTransaction', params: [{ from: senderAddress, ...transaction }] }, chain));
+  return { txHash, senderAddress, walletName: choice.name };
 }
 
-async function payTronWalletConnect(request: WalletRequest, choice: WalletChoice, projectId: string): Promise<WalletPaymentResult> {
-  if (!projectId) throw new Error('WalletConnect is temporarily unavailable.');
-  const [{ WalletConnectWallet, WalletConnectChainID }, { TronWeb }] = await Promise.all([
-    import('@tronweb3/walletconnect-tron'),
-    import('tronweb'),
-  ]);
-  const wallet = new WalletConnectWallet({
-    network: WalletConnectChainID.Mainnet,
-    options: {
-      projectId,
-      metadata: { name: 'Emirates Auction', description: 'Secure auction payment', url: window.location.origin, icons: [`${window.location.origin}/emirates-auction-logo.svg`] },
-    },
-    themeMode: 'light',
-    allWallets: 'SHOW',
-    enableAnalytics: false,
-  });
-  const { address: senderAddress } = await wallet.connect();
-  if (!senderAddress) throw new Error('The wallet did not provide a TRON account.');
+async function payTronWalletConnect(request: WalletRequest, choice: WalletChoice, projectId: string, options: WalletPaymentOptions): Promise<WalletPaymentResult> {
+  const chain = 'tron:0x2b6653dc';
+  const { provider, senderAddress } = await connectPaymentWallet({ chain, method:'tron_signTransaction', projectId, signal: options.signal });
+  const { TronWeb } = await import('tronweb');
+  options.signal?.throwIfAborted();
   if (!request.tokenIdentifier) throw new Error('This TRON payment token is not configured.');
   const tronWeb = new TronWeb({ fullHost: 'https://api.trongrid.io' });
-  const built = await tronWeb.transactionBuilder.triggerSmartContract(
+  const built = await withWalletTimeout(tronWeb.transactionBuilder.triggerSmartContract(
     request.tokenIdentifier,
     'transfer(address,uint256)',
     { feeLimit: 100_000_000 },
     [{ type: 'address', value: request.recipient }, { type: 'uint256', value: request.amountAtomic }],
     senderAddress,
-  );
+  ), 20_000, 'The TRON network could not prepare this transfer. Please retry.');
   if (!built.result?.result || !built.transaction) throw new Error('The exact TRON transfer could not be prepared.');
-  const signed = await wallet.signTransaction(built.transaction) as Record<string, unknown>;
+  options.signal?.throwIfAborted();
+  options.onStage?.('approving');
+  const response = await provider.client.request({ chainId: chain, topic: provider.session!.topic, request: {
+    method: 'tron_signTransaction',
+    params: tronSigningParams(senderAddress, built.transaction, provider.session?.sessionProperties?.tron_method_version),
+  } });
+  const envelope = response as Record<string, unknown>;
+  const signed = (envelope?.result && typeof envelope.result === 'object' ? envelope.result : envelope) as Record<string, unknown>;
+  assertSignedTronPayment(built.transaction, signed);
   const txHash = resultHash(signed);
+  options.signal?.throwIfAborted();
   if (Array.isArray(signed.signature) && signed.signature.length > 0) {
     const broadcast = await tronWeb.trx.sendRawTransaction(signed as never);
     if (broadcast && typeof broadcast === 'object' && 'result' in broadcast && !broadcast.result) throw new Error('The signed TRON transaction could not be broadcast.');
@@ -208,8 +189,8 @@ async function payTronWalletConnect(request: WalletRequest, choice: WalletChoice
   return { txHash, senderAddress, walletName: choice.name };
 }
 
-async function payTron(request: WalletRequest, choice: WalletChoice, projectId: string): Promise<WalletPaymentResult> {
-  if (choice.id === 'tron:walletconnect') return payTronWalletConnect(request, choice, projectId);
+async function payTron(request: WalletRequest, choice: WalletChoice, projectId: string, options: WalletPaymentOptions): Promise<WalletPaymentResult> {
+  if (choice.id === 'tron:walletconnect') return payTronWalletConnect(request, choice, projectId, options);
   const selected = tronProviders.get(choice.id);
   if (!selected) throw new Error('Open this page inside TronLink, OKX Wallet or another compatible TRON wallet.');
   if (selected.request) {
@@ -235,22 +216,15 @@ async function payTron(request: WalletRequest, choice: WalletChoice, projectId: 
   return { txHash: resultHash(response), senderAddress, walletName: choice.name };
 }
 
-async function paySolanaWalletConnect(request: WalletRequest, choice: WalletChoice, projectId: string): Promise<WalletPaymentResult> {
-  if (!projectId) throw new Error('WalletConnect is temporarily unavailable.');
-  const [{ WalletConnectWallet }, web3, splToken] = await Promise.all([
-    import('@walletconnect/solana-adapter/core'),
+async function paySolanaWalletConnect(request: WalletRequest, choice: WalletChoice, projectId: string, options: WalletPaymentOptions): Promise<WalletPaymentResult> {
+  const network = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
+  const { provider, senderAddress } = await connectPaymentWallet({ chain: network, method: 'solana_signAndSendTransaction', projectId, signal: options.signal });
+  const [web3, splToken] = await Promise.all([
     import('@solana/web3.js'),
     import('@solana/spl-token'),
   ]);
-  const network = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp' as ConstructorParameters<typeof WalletConnectWallet>[0]['network'];
-  const wallet = new WalletConnectWallet({
-    network,
-    options: {
-      projectId,
-      metadata: { name: 'Emirates Auction', description: 'Secure auction payment', url: window.location.origin, icons: [`${window.location.origin}/emirates-auction-logo.svg`] },
-    },
-  });
-  const { publicKey } = await wallet.connect();
+  options.signal?.throwIfAborted();
+  const publicKey = new web3.PublicKey(senderAddress);
   const connection = new web3.Connection('https://api.mainnet-beta.solana.com', 'confirmed');
   const recipient = new web3.PublicKey(request.recipient);
   const transaction = new web3.Transaction();
@@ -266,8 +240,13 @@ async function paySolanaWalletConnect(request: WalletRequest, choice: WalletChoi
     transaction.add(web3.SystemProgram.transfer({ fromPubkey: publicKey, toPubkey: recipient, lamports: BigInt(request.amountAtomic) }));
   }
   transaction.feePayer = publicKey;
-  transaction.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
-  const txHash = await wallet.signAndSendTransaction(transaction);
+  transaction.recentBlockhash = (await withWalletTimeout(connection.getLatestBlockhash('confirmed'),20_000,'The Solana network could not prepare this transfer. Please retry.')).blockhash;
+  options.signal?.throwIfAborted();
+  options.onStage?.('approving');
+  const response = await provider.client.request<{ signature: string }>({ chainId: network, topic: provider.session!.topic, request: {
+    method: 'solana_signAndSendTransaction', params: { transaction: Buffer.from(transaction.serialize({ verifySignatures: false })).toString('base64') },
+  } });
+  const txHash = resultHash(response);
   return { txHash, senderAddress: publicKey.toBase58(), walletName: choice.name };
 }
 
@@ -283,11 +262,28 @@ async function payBitcoin(request: WalletRequest, choice: WalletChoice): Promise
   return { txHash, senderAddress, walletName: choice.name };
 }
 
-export async function executeWalletPayment(request: WalletRequest, choice: WalletChoice, walletConnectProjectId = '') {
-  if (choice.id === 'evm:walletconnect') return payEvmWalletConnect(request, choice, walletConnectProjectId);
-  if (choice.id === 'solana:walletconnect') return paySolanaWalletConnect(request, choice, walletConnectProjectId);
+export function tronSigningParams(address: string, transaction: unknown, version?: string) {
+  return { address, transaction: version === 'v1' ? transaction : { transaction } };
+}
+
+export function assertSignedTronPayment(unsigned: { txID?: string; raw_data_hex?: string }, signed: Record<string, unknown>) {
+  if (!Array.isArray(signed.signature) || !signed.signature.length || !signed.signature.every((item) => typeof item === 'string' && /^[a-f0-9]{130}$/i.test(item))) {
+    throw new Error('The wallet returned an unsigned TRON payload. No transaction was broadcast.');
+  }
+  if (signed.txID !== unsigned.txID || signed.raw_data_hex !== unsigned.raw_data_hex) {
+    throw new Error('The wallet changed the fixed payment transaction. No transaction was broadcast.');
+  }
+}
+
+export async function executeWalletPayment(request: WalletRequest, choice: WalletChoice, walletConnectProjectId = '', options: WalletPaymentOptions = {}) {
+  if (!/^\d+$/.test(request.amountAtomic) || BigInt(request.amountAtomic) <= 0n) throw new Error('The fixed payment amount is invalid. Generate a new payment request.');
+  options.signal?.throwIfAborted();
+  if (choice.id === 'evm:walletconnect') return payEvmWalletConnect(request, choice, walletConnectProjectId, options);
+  if (choice.id === 'solana:walletconnect') return paySolanaWalletConnect(request, choice, walletConnectProjectId, options);
+  if (choice.id === 'tron:walletconnect') return payTronWalletConnect(request, choice, walletConnectProjectId, options);
+  options.onStage?.('approving');
   if (request.family === 'evm') return payEvmInjected(request, choice);
-  if (request.family === 'tron') return payTron(request, choice, walletConnectProjectId);
+  if (request.family === 'tron') return payTron(request, choice, walletConnectProjectId, options);
   if (request.family === 'bitcoin') return payBitcoin(request, choice);
   throw new Error('Use the fixed-amount QR or payment request for this network.');
 }
@@ -295,6 +291,6 @@ export async function executeWalletPayment(request: WalletRequest, choice: Walle
 export function friendlyWalletError(reason: unknown) {
   const record = reason && typeof reason === 'object' ? reason as Record<string, unknown> : {};
   const code = Number(record.code ?? 0);
-  if (code === 4001 || code === -32000 || /reject|declin|cancel/i.test(String(record.message ?? ''))) return 'The payment was cancelled in the wallet. No funds were moved.';
+  if (code === 4001 || /reject|declin|cancel/i.test(String(record.message ?? ''))) return 'Wallet connection or approval was cancelled. You can try again.';
   return reason instanceof Error ? reason.message : 'The wallet could not prepare this payment.';
 }

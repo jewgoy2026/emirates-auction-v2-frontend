@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { api, normalizeIntent, type PaymentIntent } from '../../lib/v2';
 import { discoverWalletChoices, executeWalletPayment, friendlyWalletError, type WalletChoice } from '../../lib/wallet-payment';
 
@@ -8,6 +8,10 @@ type Stage = 'ready' | 'connecting' | 'approving' | 'registering' | 'submitted';
 
 function shortHash(value: string) {
   return value.length > 22 ? `${value.slice(0, 12)}…${value.slice(-8)}` : value;
+}
+
+function WalletConnectMark() {
+  return <svg viewBox="0 0 32 20" width="30" height="20" aria-hidden="true"><path d="M6.2 6.3c5.4-5.3 14.2-5.3 19.6 0l.7.7-2.4 2.4-.7-.7a10.6 10.6 0 0 0-14.8 0l-.7.7L5.5 7l.7-.7ZM2.4 10.1l6.2 6.1 6.2-6.1 1.2-1.2 1.2 1.2 6.2 6.1 6.2-6.1 2.4 2.4-8.6 8.4-7.4-7.3-7.4 7.3L0 12.5l2.4-2.4Z" fill="currentColor"/></svg>;
 }
 
 export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl, onIntent }: {
@@ -20,6 +24,8 @@ export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl
   const [selectedId, setSelectedId] = useState('');
   const [stage, setStage] = useState<Stage>('ready');
   const [error, setError] = useState('');
+  const [discovering, setDiscovering] = useState(true);
+  const operation = useRef<AbortController | null>(null);
   const request = intent.walletRequest;
   const submitted = Boolean(intent.txHash) || ['confirming', 'confirmed'].includes(intent.status);
   const mismatched = intent.status === 'amount_mismatch';
@@ -28,24 +34,28 @@ export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl
 
   useEffect(() => {
     let current = true;
-    setChoices([]); setSelectedId(''); setStage(intent.txHash ? 'submitted' : 'ready'); setError('');
+    operation.current?.abort();
+    setChoices([]); setSelectedId(''); setStage(intent.txHash ? 'submitted' : 'ready'); setError(''); setDiscovering(true);
     if (!request) return () => { current = false; };
     discoverWalletChoices(request, walletConnectProjectId).then((items) => {
       if (!current) return;
       setChoices(items);
       setSelectedId(items[0]?.id ?? '');
-    }).catch((reason) => { console.error('Wallet discovery failed', reason); if (current) setChoices([]); });
-    return () => { current = false; };
-  }, [intent.id, intent.txHash, request, walletConnectProjectId]);
+    }).catch((reason) => { if (current) setError(friendlyWalletError(reason)); }).finally(() => { if (current) setDiscovering(false); });
+    return () => { current = false; operation.current?.abort(); };
+  }, [intent.id, intent.txHash, walletConnectProjectId, request?.family]);
 
   async function pay() {
     if (!request || !selected || submitted) return;
+    if (intent.expiresAt <= Date.now()) { setError('This quote has expired. Generate a new payment request.'); return; }
+    if (request.amountDecimal !== intent.cryptoAmount || request.recipient !== intent.address) { setError('The payment details could not be verified. Refresh this request.'); return; }
+    const controller = new AbortController();
+    operation.current = controller;
     setError(''); setStage('connecting');
     try {
       // The adapter receives only the immutable request returned by the API. It
       // never recalculates the AED conversion or accepts an amount from the UI.
-      setStage('approving');
-      const result = await executeWalletPayment(request, selected, walletConnectProjectId);
+      const result = await executeWalletPayment(request, selected, walletConnectProjectId, { signal: controller.signal, onStage: setStage });
       setStage('registering');
       const response = await api<{ intent: unknown }>(`/v1/payment/intents/${intent.id}/submissions`, {
         body: { txHash: result.txHash, sourceAddress: result.senderAddress, connector: result.walletName },
@@ -73,6 +83,8 @@ export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl
     </div>
   </div>;
 
+  if (discovering) return <div className="ea-wallet-connect" role="status">{rtl ? 'جارٍ تجهيز خيارات المحفظة…' : 'Preparing wallet options…'}</div>;
+
   if (!choices.length) return <div className="ea-wallet-connect ea-wallet-connect-fallback">
     <strong>{rtl ? 'لم يتم اكتشاف محفظة متوافقة' : 'No compatible wallet was detected'}</strong>
     <p>{request.family === 'tron'
@@ -87,10 +99,11 @@ export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl
     <div className="ea-wallet-progress" aria-label={rtl ? 'مراحل الدفع' : 'Payment progress'}>
       {[rtl ? 'الاتصال' : 'Connect', rtl ? 'المراجعة' : 'Review', rtl ? 'الإرسال' : 'Submit'].map((label, index) => <span className={progress > index ? 'active' : ''} key={label}><i>{progress > index ? '✓' : index + 1}</i>{label}</span>)}
     </div>
-    <div className="ea-wallet-choices" role="radiogroup" aria-label={rtl ? 'اختر المحفظة' : 'Choose wallet'}>{choices.map((choice) => <button type="button" role="radio" aria-checked={selected?.id === choice.id} className={selected?.id === choice.id ? 'selected' : ''} onClick={() => setSelectedId(choice.id)} key={choice.id}>{choice.icon ? <img src={choice.icon} alt=""/> : <b>{choice.name.slice(0, 1)}</b>}<span><strong>{choice.name}</strong><small>{choice.detail}</small></span><i>{selected?.id === choice.id ? '✓' : ''}</i></button>)}</div>
+    <div className="ea-wallet-choices" role="radiogroup" aria-label={rtl ? 'اختر المحفظة' : 'Choose wallet'}>{choices.map((choice) => <button type="button" disabled={stage !== 'ready'} role="radio" aria-checked={selected?.id === choice.id} className={selected?.id === choice.id ? 'selected' : ''} onClick={() => setSelectedId(choice.id)} key={choice.id}>{choice.kind === 'walletconnect' ? <b className="ea-wc-mark"><WalletConnectMark/></b> : choice.icon ? <img src={choice.icon} alt=""/> : <b>{choice.name.slice(0, 1)}</b>}<span><strong>{choice.name}</strong><small>{choice.detail}</small></span><i>{selected?.id === choice.id ? '✓' : ''}</i></button>)}</div>
     <div className="ea-wallet-exact"><span>{rtl ? 'ستطلب المحفظة بالضبط' : 'Wallet will request exactly'}</span><strong>{intent.cryptoAmount} {intent.asset}</strong><small>{intent.network} · {intent.standard}</small></div>
     {error && <div className="alert alert-error">{error}</div>}
-    <button type="button" className="red-button ea-wallet-pay" onClick={pay} disabled={stage !== 'ready'}>{stage === 'connecting' ? (rtl ? 'جارٍ الاتصال…' : 'Connecting wallet…') : stage === 'approving' ? (rtl ? 'راجع ووافق في المحفظة…' : 'Review and approve in wallet…') : stage === 'registering' ? (rtl ? 'جارٍ ربط المعاملة…' : 'Linking transaction…') : (rtl ? `الاتصال بـ ${selected?.name} والدفع` : `Connect ${selected?.name} & pay`)}</button>
+    <button type="button" className={`red-button ea-wallet-pay ${selected?.kind === 'walletconnect' ? 'ea-wallet-pay-wc' : ''}`} onClick={pay} disabled={stage !== 'ready'}>{selected?.kind === 'walletconnect' && <WalletConnectMark/>}<span>{stage === 'connecting' ? (rtl ? 'اختر محفظتك…' : 'Choose your wallet…') : stage === 'approving' ? (rtl ? 'راجع ووافق في المحفظة…' : 'Review and approve in wallet…') : stage === 'registering' ? (rtl ? 'جارٍ ربط المعاملة…' : 'Linking transaction…') : selected?.kind === 'walletconnect' ? (rtl ? 'الاتصال عبر WalletConnect' : 'Connect with WalletConnect') : (rtl ? `الاتصال بـ ${selected?.name} والدفع` : `Connect ${selected?.name} & pay`)}</span></button>
+    {stage === 'connecting' && <button type="button" className="ea-wallet-cancel" onClick={() => operation.current?.abort()}>{rtl ? 'إلغاء الاتصال' : 'Cancel connection'}</button>}
     <p className="ea-wallet-safety">{rtl ? 'لن نطلب أبداً العبارة السرية أو المفتاح الخاص. المحفظة توقع المعاملة محلياً.' : 'We never request your recovery phrase or private key. Your wallet signs locally.'}</p>
   </div>;
 }
