@@ -1,0 +1,12 @@
+/*
+ * iOS Safari zooms the page when an editable control below 16px receives
+ * focus. Keep mobile form controls at the native readable size so focusing
+ * login, checkout and bidding fields does not change the page scale.
+ */
+@media (max-width: 620px) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
