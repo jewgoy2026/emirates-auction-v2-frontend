@@ -34,7 +34,7 @@ export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl
       if (!current) return;
       setChoices(items);
       setSelectedId(items[0]?.id ?? '');
-    }).catch(() => { if (current) setChoices([]); });
+    }).catch((reason) => { console.error('Wallet discovery failed', reason); if (current) setChoices([]); });
     return () => { current = false; };
   }, [intent.id, intent.txHash, request, walletConnectProjectId]);
 
