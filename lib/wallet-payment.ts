@@ -44,6 +44,7 @@ let eipListenerReady = false;
 function browserWindow() {
   return window as typeof window & {
     ethereum?: Eip1193Provider;
+    tron?: { request?(args: { method: string }): Promise<unknown>; tronWeb?: TronWebLike };
     tronLink?: { request?(args: { method: string }): Promise<unknown>; tronWeb?: TronWebLike };
     tronWeb?: TronWebLike;
     okxwallet?: { tronLink?: { request?(args: { method: string }): Promise<unknown>; tronWeb?: TronWebLike }; tronWeb?: TronWebLike; bitcoin?: BitcoinProvider };
@@ -97,8 +98,8 @@ async function discoverEvm(projectId: string) {
 function discoverTron() {
   tronProviders.clear();
   const current = browserWindow();
-  const tronLink = current.tronLink, tronWeb = tronLink?.tronWeb ?? current.tronWeb;
-  if (tronWeb) tronProviders.set('tron:tronlink', { name: 'TronLink', tronWeb, request: tronLink?.request?.bind(tronLink) });
+  const modern = current.tron, tronLink = current.tronLink, activeTron = modern ?? tronLink, tronWeb = activeTron?.tronWeb ?? current.tronWeb;
+  if (tronWeb) tronProviders.set('tron:tronlink', { name: 'TronLink', tronWeb, request: activeTron?.request?.bind(activeTron) });
   const okxLink = current.okxwallet?.tronLink, okxTronWeb = okxLink?.tronWeb ?? current.okxwallet?.tronWeb;
   if (okxTronWeb && okxTronWeb !== tronWeb) tronProviders.set('tron:okx', { name: 'OKX Wallet', tronWeb: okxTronWeb, request: okxLink?.request?.bind(okxLink) });
   return Array.from(tronProviders, ([id, item]) => ({ id, name: item.name, detail: 'Installed TRON wallet', kind: 'installed' as const }));
@@ -167,7 +168,14 @@ async function payEvmWalletConnect(request: WalletRequest, choice: WalletChoice,
 async function payTron(request: WalletRequest, choice: WalletChoice): Promise<WalletPaymentResult> {
   const selected = tronProviders.get(choice.id);
   if (!selected) throw new Error('Open this page inside TronLink, OKX Wallet or another compatible TRON wallet.');
-  if (selected.request) await selected.request({ method: 'tron_requestAccounts' });
+  if (selected.request) {
+    try { await selected.request({ method: 'eth_requestAccounts' }); }
+    catch (reason) {
+      const record = reason && typeof reason === 'object' ? reason as Record<string, unknown> : {};
+      if (!/method|unsupported|not found|-32601/i.test(`${record.code ?? ''} ${record.message ?? ''}`)) throw reason;
+      await selected.request({ method: 'tron_requestAccounts' });
+    }
+  }
   const senderAddress = selected.tronWeb.defaultAddress?.base58 ?? '';
   if (!senderAddress) throw new Error('Unlock the TRON wallet and approve the connection.');
   let response: unknown;

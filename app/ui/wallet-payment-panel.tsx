@@ -75,8 +75,10 @@ export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl
 
   if (!choices.length) return <div className="ea-wallet-connect ea-wallet-connect-fallback">
     <strong>{rtl ? 'ادفع بالمبلغ الثابت من محفظتك' : 'Pay the fixed amount from your wallet'}</strong>
-    <p>{rtl ? 'افتح هذا الموقع داخل متصفح محفظتك أو امسح رمز QR من جهاز آخر. طلب الدفع يحمل الشبكة والمبلغ المحدد.' : 'Open this site inside your wallet browser or scan the QR from another device. The request carries the selected network and exact amount.'}</p>
-    <a className="red-button" href={intent.paymentUri}>{rtl ? 'فتح محفظة متوافقة' : 'Open compatible wallet'}</a>
+    <p>{request.family === 'tron'
+      ? (rtl ? 'افتح هذه الصفحة داخل متصفح TronLink أو OKX. بعد الاتصال، ستنشئ المنصة التحويل بالقيمة الدقيقة ولا تسمح بتعديلها.' : 'Open this page inside the TronLink or OKX in-app browser. Once connected, the platform builds the transfer with the exact immutable amount.')
+      : (rtl ? 'افتح طلب الدفع أدناه أو امسح رمز QR من جهاز آخر. يحتوي الطلب على الشبكة والمبلغ المحدد.' : 'Open the payment request below or scan its QR from another device. The request carries the selected network and exact amount.')}</p>
+    {request.family !== 'tron' && <a className="red-button" href={intent.paymentUri}>{rtl ? 'فتح المحفظة بالمبلغ المحدد' : 'Open wallet with exact amount'}</a>}
   </div>;
 
   const progress = stage === 'ready' ? 0 : stage === 'connecting' ? 1 : stage === 'approving' ? 2 : 3;
