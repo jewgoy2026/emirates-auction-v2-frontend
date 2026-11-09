@@ -259,6 +259,16 @@ const faqs = {
   ],
 } as const;
 
+function resetPageScroll() {
+  if (typeof window === 'undefined') return;
+  window.requestAnimationFrame(() => {
+    const root = document.documentElement, previousBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    window.requestAnimationFrame(() => { root.style.scrollBehavior = previousBehavior; });
+  });
+}
+
 export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage?: Language }) {
   const language = initialLanguage, rtl = language === 'ar', t = copy[language];
   const [categories, setCategories] = useState<Category[]>([]), [lots, setLots] = useState<Lot[]>([]), [rails, setRails] = useState<Rail[]>([]);
@@ -343,7 +353,11 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
       const catalogLot = id ? lots.find((lot) => lot.id === id) ?? null : null;
       setSelectedLot((current) => current?.id === catalogLot?.id ? current : catalogLot);
     };
-    syncRoute(); window.addEventListener('popstate', syncRoute); return () => window.removeEventListener('popstate', syncRoute);
+    const restoreRoute = () => { syncRoute(); resetPageScroll(); };
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    syncRoute(); window.addEventListener('popstate', restoreRoute);
+    return () => { window.removeEventListener('popstate', restoreRoute); window.history.scrollRestoration = previousRestoration; };
   }, [lots,user,directOrder?.id,loading]);
   useEffect(() => {
     if (!selectedLot) { setGalleryImages([]); setGalleryIndex(0); setGalleryThumbLimit(48); setGalleryLoading(false); setVehicleSpecs([]); setSourceDescription(''); return; }
@@ -444,9 +458,13 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
     if (selectedLot) { window.history.pushState({},'',rtl?'/ar':'/'); setSelectedLot(null); }
     setSelectedCategory(category); setPage(1); setSearch(''); setTimeout(() => document.querySelector('#lots')?.scrollIntoView({ behavior: 'smooth' }),0);
   }
-  function openLot(lot: Lot) { setSelectedLot(lot); setGalleryIndex(0); setError(''); window.history.pushState({ lotId: lot.id },'',`/lots/${lot.id}`); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  function closeLot() { setSelectedLot(null); setGalleryImages([]); setError(''); window.history.pushState({},'',rtl?'/ar':'/'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  function showCheckout(page:Exclude<CheckoutPage,null>,url:string){setCheckoutPage(page);window.history.pushState({checkout:page},'',url);window.scrollTo({top:0,behavior:'smooth'});}
+  function changeMarketPage(nextPage: number) {
+    setPage(Math.max(1, Math.min(nextPage, pageCount)));
+    resetPageScroll();
+  }
+  function openLot(lot: Lot) { setSelectedLot(lot); setGalleryIndex(0); setError(''); window.history.pushState({ lotId: lot.id },'',`/lots/${lot.id}`); resetPageScroll(); }
+  function closeLot() { setSelectedLot(null); setGalleryImages([]); setError(''); window.history.pushState({},'',rtl?'/ar':'/'); resetPageScroll(); }
+  function showCheckout(page:Exclude<CheckoutPage,null>,url:string){setCheckoutPage(page);window.history.pushState({checkout:page},'',url);resetPageScroll();}
   function openSecurityPage(lotId:string|null,targetLimitMinor?:number){
     const lot=lotId?lotById.get(lotId):null,minimum=lot?.minimumLimit||1_500_000,limit=Math.max(targetLimitMinor||minimum,minimum);
     setSecurityLotId(lotId);setSecurityLimit((limit/100).toFixed(2));setSecurityStep('method');setSecurityMethod(null);setError('');showCheckout('security',`/checkout/security-deposit${lotId?`?lot=${encodeURIComponent(lotId)}`:''}`);
@@ -455,7 +473,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   function closeCheckout(){
     const paymentLot=paymentFor&&paymentFor!=='funds'?'kind' in paymentFor?(paymentFor.kind==='direct'?paymentFor.order.lotId:paymentFor.lotId):paymentFor.lotId:null,lotId=directOrder?.lotId||securityLotId||paymentLot||null,lot=lotId?lotById.get(lotId):null;
     setCheckoutPage(null);setPaymentFor(null);setIntent(null);setQr('');setError('');
-    if(lot){setSelectedLot(lot);window.history.pushState({lotId:lot.id},'',`/lots/${lot.id}`);}else{setSelectedLot(null);window.history.pushState({},'',rtl?'/ar':'/');}window.scrollTo({top:0,behavior:'smooth'});
+    if(lot){setSelectedLot(lot);window.history.pushState({lotId:lot.id},'',`/lots/${lot.id}`);}else{setSelectedLot(null);window.history.pushState({},'',rtl?'/ar':'/');}resetPageScroll();
   }
 
   async function submitAuth(event: FormEvent<HTMLFormElement>) {
@@ -631,7 +649,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
           <label className="ea-tool-select ea-sort-select" aria-label={rtl?'ترتيب النتائج':'Sort results'}><Icon name="sort" size={19}/><select value={sort} onChange={(event)=>{setSort(event.target.value as typeof sort);setPage(1);}}><option value="price">{rtl?'الأعلى سعراً':'Highest price'}</option><option value="ending">{rtl?'ينتهي قريباً':'Ending soon'}</option><option value="bids">{rtl?'الأكثر مزايدة':'Most bids'}</option></select></label>
         </div></div>
         {error && <div className="alert alert-error">{error}<button onClick={() => setError('')}><Icon name="close" size={17}/></button></div>}
-        {!!filtered.length&&<div className="ea-market-range"><span>{rtl?'عرض':'Showing'} {pageStart+1}–{Math.min(pageStart+pageSize,filtered.length)} {rtl?'من':'of'} {filtered.length.toLocaleString(rtl?'ar-AE':'en-AE')}</span>{pageCount>1&&<nav className="ea-pagination" aria-label={rtl?'ترقيم صفحات المزاد':'Auction pages'}><button disabled={currentPage===1} onClick={()=>{setPage(currentPage-1);document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'});}} aria-label={rtl?'الصفحة السابقة':'Previous page'}><Icon name="arrow" size={16}/></button>{paginationPages.map((item)=><button className={item===currentPage?'active':''} aria-current={item===currentPage?'page':undefined} onClick={()=>{setPage(item);document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'});}} key={item}>{item}</button>)}<span>{rtl?'من':'of'} {pageCount}</span><button disabled={currentPage===pageCount} onClick={()=>{setPage(currentPage+1);document.querySelector('#lots')?.scrollIntoView({behavior:'smooth'});}} aria-label={rtl?'الصفحة التالية':'Next page'}><Icon name="arrow" size={16}/></button></nav>}</div>}
+        {!!filtered.length&&<div className="ea-market-range"><span>{rtl?'عرض':'Showing'} {pageStart+1}–{Math.min(pageStart+pageSize,filtered.length)} {rtl?'من':'of'} {filtered.length.toLocaleString(rtl?'ar-AE':'en-AE')}</span>{pageCount>1&&<nav className="ea-pagination" aria-label={rtl?'ترقيم صفحات المزاد':'Auction pages'}><button disabled={currentPage===1} onClick={()=>changeMarketPage(currentPage-1)} aria-label={rtl?'الصفحة السابقة':'Previous page'}><Icon name="arrow" size={16}/></button>{paginationPages.map((item)=><button className={item===currentPage?'active':''} aria-current={item===currentPage?'page':undefined} onClick={()=>changeMarketPage(item)} key={item}>{item}</button>)}<span>{rtl?'من':'of'} {pageCount}</span><button disabled={currentPage===pageCount} onClick={()=>changeMarketPage(currentPage+1)} aria-label={rtl?'الصفحة التالية':'Next page'}><Icon name="arrow" size={16}/></button></nav>}</div>}
         {!loading && !filtered.length ? <Empty text={t.noLots}/> : <div className="ea-lot-grid">{pageLots.map((lot) => { const plate = plateMeta(lot, platePreview); return <article className={`ea-lot-card ${plate ? 'ea-plate-lot-card' : ''}`} key={lot.id}>
           <button className="ea-lot-image" onClick={() => openLot(lot)}>{plate ? <PlateVisual plate={plate} title={lot.title}/> : lot.imageUrl ? <img src={lot.imageUrl} alt={lot.title} loading="lazy"/> : <span><Icon name={categoryIcon(lot.category)} size={62}/></span>}{lot.mode === 'auction' && <span className="ea-lot-badge">{lot.bidCount}</span>}<Status tone={lot.mode === 'direct' ? 'gold' : 'red'}>{lot.mode === 'direct' ? t.directSale : t.onlineBidding}</Status></button>
           <div className="ea-lot-body"><span>{localizedCategory(lot.category,language)}</span><h3>{lot.title}</h3>{lot.locationLabel&&<small className="ea-lot-card-location"><Icon name="grid" size={13}/>{lot.locationLabel}</small>}{plate && <button className="ea-view-on-car" onClick={() => openPlatePreview(lot)}><Icon name="car" size={16}/>{rtl?'عرض اللوحة على السيارة':'View on Car'}</button>}<div className="ea-lot-meta"><small>{lot.mode === 'direct' ? t.directSale : `${lot.bidCount} ${t.bids}`}</small><small>{t.lot} {lot.id.slice(0,8).toUpperCase()}</small></div><div className="ea-lot-price"><div><small>{lot.mode === 'direct' ? t.price : t.currentBid}</small><strong>{money(lot.currentPrice)}</strong></div>{lot.mode === 'auction' && lot.endsAt > now && <div className="timer"><Icon name="clock" size={16}/><span>{remaining(lot.endsAt,now)}</span></div>}</div><button className="ea-lot-primary" onClick={() => openLot(lot)}>{lot.mode === 'direct' ? t.buyNow : t.bidNow}<Icon name="arrow" size={17}/></button></div>
