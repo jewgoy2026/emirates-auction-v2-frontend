@@ -69,9 +69,12 @@ function PaymentInstruction({ intent, qr, walletConnectProjectId, rtl, busy, onI
     {(submitted || channel === 'wallet') && <>
       <WalletPaymentPanel intent={intent} walletConnectProjectId={walletConnectProjectId} rtl={rtl} onIntent={onIntent}/>
       {!submitted && family !== 'tron' && <section className="ea-qr-fallback ea-payment-open-panel">
-        <strong>{rtl ? 'امسح من داخل محفظة متوافقة' : 'Scan from a compatible wallet'}</strong>
+        <strong>{family === 'bitcoin' ? (rtl ? 'امسح أو انسخ طلب Bitcoin' : 'Scan or copy the Bitcoin request') : (rtl ? 'امسح من داخل محفظة متوافقة' : 'Scan from a compatible wallet')}</strong>
         {qr && <img src={qr} alt={rtl ? 'رمز QR للدفع بالمبلغ الثابت' : 'Fixed-amount crypto payment QR code'}/>}
-        <p>{rtl ? 'يحتوي رمز QR على الشبكة والمستلم والمبلغ المحدد. لا تلصقه في خانة عنوان الصرافة.' : 'The QR contains the network, recipient and fixed amount. Do not paste it into an exchange address field.'}</p>
+        <p>{family === 'bitcoin'
+          ? (rtl ? 'يحتوي الطلب على عنوان Bitcoin والمبلغ الدقيق المحدد مسبقاً.' : 'The request includes the Bitcoin address and the exact prefilled amount.')
+          : (rtl ? 'يحتوي رمز QR على الشبكة والمستلم والمبلغ المحدد. لا تلصقه في خانة عنوان الصرافة.' : 'The QR contains the network, recipient and fixed amount. Do not paste it into an exchange address field.')}</p>
+        {family === 'bitcoin' && intent.paymentUri.startsWith('bitcoin:') && <button type="button" className="text-button ea-copy-request" onClick={() => onCopy(intent.paymentUri, rtl ? 'طلب Bitcoin' : 'Bitcoin payment code')}>{rtl ? 'نسخ طلب Bitcoin بالمبلغ' : 'Copy Bitcoin request with amount'}</button>}
       </section>}
     </>}
 

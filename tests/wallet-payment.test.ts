@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertSignedTronPayment, transactionValue, tronSigningParams } from '../lib/wallet-payment.ts';
+import { assertSignedTronPayment, bitcoinTransferParams, transactionValue, tronSigningParams } from '../lib/wallet-payment.ts';
 import { withWalletTimeout } from '../lib/walletconnect-client.ts';
 import worker from '../worker/index.ts';
 import type { WalletRequest } from '../lib/v2.ts';
@@ -26,6 +26,13 @@ test('EVM transfer keeps values beyond JS integer precision exact', () => {
   assert.equal(tx.value,'0x0');
   assert.equal(BigInt(`0x${tx.data.slice(-64)}`).toString(),request.amountAtomic);
   assert.equal(tx.data.slice(10,74),request.recipient.slice(2).padStart(64,'0'));
+});
+
+test('Bitcoin WalletConnect keeps the immutable amount as an exact satoshi string', () => {
+  const request = {family:'bitcoin',chainId:null,recipient:'bc1qexactrecipient',tokenIdentifier:null,amountAtomic:'11011412',amountDecimal:'0.11011412',memo:'',transaction:{address:'bc1qexactrecipient',satoshis:'11011412'}} satisfies WalletRequest;
+  assert.deepEqual(bitcoinTransferParams(request,'bc1qsender'),{
+    account:'bc1qsender',recipientAddress:'bc1qexactrecipient',amount:'11011412',
+  });
 });
 
 test('an unreachable connection finishes with a retryable error', async () => {

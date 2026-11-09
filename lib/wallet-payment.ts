@@ -113,12 +113,14 @@ function discoverTron(projectId: string) {
   return choices;
 }
 
-function discoverBitcoin() {
+function discoverBitcoin(projectId: string) {
   bitcoinProviders.clear();
   const current = browserWindow();
   if (current.unisat) bitcoinProviders.set('bitcoin:unisat', { name: 'UniSat', provider: current.unisat });
   if (current.okxwallet?.bitcoin) bitcoinProviders.set('bitcoin:okx', { name: 'OKX Wallet', provider: current.okxwallet.bitcoin });
-  return Array.from(bitcoinProviders, ([id, item]) => ({ id, name: item.name, detail: 'Installed Bitcoin wallet', kind: 'installed' as const }));
+  const choices: WalletChoice[] = Array.from(bitcoinProviders, ([id, item]) => ({ id, name: item.name, detail: 'Installed Bitcoin wallet', kind: 'installed' as const }));
+  if (projectId) choices.push({ id: 'bitcoin:walletconnect', name: 'WalletConnect', detail: 'Scan QR or choose a Bitcoin-compatible wallet', kind: 'walletconnect' });
+  return choices;
 }
 
 export async function discoverWalletChoices(request: WalletRequest, walletConnectProjectId = ''): Promise<WalletChoice[]> {
@@ -126,7 +128,7 @@ export async function discoverWalletChoices(request: WalletRequest, walletConnec
   if (request.family === 'evm') return discoverEvm(walletConnectProjectId);
   if (request.family === 'tron') return discoverTron(walletConnectProjectId);
   if (request.family === 'solana' && walletConnectProjectId) return [{ id: 'solana:walletconnect', name: 'WalletConnect', detail: 'Scan QR or choose a Solana-compatible wallet', kind: 'walletconnect' }];
-  if (request.family === 'bitcoin') return discoverBitcoin();
+  if (request.family === 'bitcoin') return discoverBitcoin(walletConnectProjectId);
   return [];
 }
 
@@ -262,6 +264,31 @@ async function payBitcoin(request: WalletRequest, choice: WalletChoice): Promise
   return { txHash, senderAddress, walletName: choice.name };
 }
 
+export function bitcoinTransferParams(request: WalletRequest, senderAddress: string) {
+  if (request.family !== 'bitcoin' || !/^\d+$/.test(request.amountAtomic) || BigInt(request.amountAtomic) <= 0n) {
+    throw new Error('The fixed Bitcoin payment amount is invalid.');
+  }
+  return {
+    account: senderAddress,
+    recipientAddress: request.recipient,
+    // WalletConnect's Bitcoin sendTransfer method accepts the amount as a
+    // decimal string in satoshis. Keep it as a string to prevent rounding.
+    amount: request.amountAtomic,
+  };
+}
+
+async function payBitcoinWalletConnect(request: WalletRequest, choice: WalletChoice, projectId: string, options: WalletPaymentOptions): Promise<WalletPaymentResult> {
+  const chain = 'bip122:000000000019d6689c085ae165831e93';
+  const { provider, senderAddress } = await connectPaymentWallet({ chain, method: 'sendTransfer', projectId, signal: options.signal });
+  options.signal?.throwIfAborted();
+  options.onStage?.('approving');
+  const txHash = resultHash(await provider.request({
+    method: 'sendTransfer',
+    params: bitcoinTransferParams(request, senderAddress),
+  }, chain));
+  return { txHash, senderAddress, walletName: choice.name };
+}
+
 export function tronSigningParams(address: string, transaction: unknown, version?: string) {
   return { address, transaction: version === 'v1' ? transaction : { transaction } };
 }
@@ -281,6 +308,7 @@ export async function executeWalletPayment(request: WalletRequest, choice: Walle
   if (choice.id === 'evm:walletconnect') return payEvmWalletConnect(request, choice, walletConnectProjectId, options);
   if (choice.id === 'solana:walletconnect') return paySolanaWalletConnect(request, choice, walletConnectProjectId, options);
   if (choice.id === 'tron:walletconnect') return payTronWalletConnect(request, choice, walletConnectProjectId, options);
+  if (choice.id === 'bitcoin:walletconnect') return payBitcoinWalletConnect(request, choice, walletConnectProjectId, options);
   options.onStage?.('approving');
   if (request.family === 'evm') return payEvmInjected(request, choice);
   if (request.family === 'tron') return payTron(request, choice, walletConnectProjectId, options);
