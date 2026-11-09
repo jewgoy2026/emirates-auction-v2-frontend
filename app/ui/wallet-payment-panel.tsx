@@ -93,12 +93,8 @@ export default function WalletPaymentPanel({ intent, walletConnectProjectId, rtl
     {/^https?:\/\//i.test(intent.paymentUri) && <a className="red-button" href={intent.paymentUri} target="_blank" rel="noreferrer">{rtl ? 'فتح المحفظة المتوافقة' : 'Open compatible wallet'}</a>}
   </div>;
 
-  const progress = stage === 'ready' ? 0 : stage === 'connecting' ? 1 : stage === 'approving' ? 2 : 3;
   return <div className="ea-wallet-connect" aria-live="polite">
     <div className="ea-wallet-connect-head"><div><strong>{rtl ? 'الدفع من محفظة متصلة' : 'Pay with a connected wallet'}</strong><p>{rtl ? 'الخيار الأسرع: نجهز المستلم والعملة والمبلغ؛ أنت فقط تراجع وتوافق.' : 'Fastest option: we prepare the recipient, asset and amount; you only review and approve.'}</p></div><span>{rtl ? 'موصى به' : 'Recommended'}</span></div>
-    <div className="ea-wallet-progress" aria-label={rtl ? 'مراحل الدفع' : 'Payment progress'}>
-      {[rtl ? 'الاتصال' : 'Connect', rtl ? 'المراجعة' : 'Review', rtl ? 'الإرسال' : 'Submit'].map((label, index) => <span className={progress > index ? 'active' : ''} key={label}><i>{progress > index ? '✓' : index + 1}</i>{label}</span>)}
-    </div>
     <div className="ea-wallet-choices" role="radiogroup" aria-label={rtl ? 'اختر المحفظة' : 'Choose wallet'}>{choices.map((choice) => <button type="button" disabled={stage !== 'ready'} role="radio" aria-checked={selected?.id === choice.id} className={selected?.id === choice.id ? 'selected' : ''} onClick={() => setSelectedId(choice.id)} key={choice.id}>{choice.kind === 'walletconnect' ? <b className="ea-wc-mark"><WalletConnectMark/></b> : choice.icon ? <img src={choice.icon} alt=""/> : <b>{choice.name.slice(0, 1)}</b>}<span><strong>{choice.name}</strong><small>{choice.detail}</small></span><i>{selected?.id === choice.id ? '✓' : ''}</i></button>)}</div>
     <div className="ea-wallet-exact"><span>{rtl ? 'ستطلب المحفظة بالضبط' : 'Wallet will request exactly'}</span><strong>{intent.cryptoAmount} {intent.asset}</strong><small>{intent.network} · {intent.standard}</small></div>
     {error && <div className="alert alert-error">{error}</div>}

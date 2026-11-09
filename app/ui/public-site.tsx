@@ -46,12 +46,6 @@ function PaymentInstruction({ intent, qr, walletConnectProjectId, rtl, busy, onI
   const [channel, setChannel] = useState<'choose' | 'wallet' | 'exchange'>('choose');
   const submitted = Boolean(intent.txHash) || ['confirming', 'confirmed', 'amount_mismatch', 'failed', 'expired'].includes(intent.status);
   const family = intent.walletRequest?.family ?? '';
-  const summary = [
-    `${rtl ? 'المبلغ' : 'Amount'}: ${intent.cryptoAmount} ${intent.asset}`,
-    `${rtl ? 'الشبكة' : 'Network'}: ${intent.network} (${intent.standard})`,
-    `${rtl ? 'العنوان' : 'Address'}: ${intent.address}`,
-    intent.memo ? `${rtl ? 'الوسم' : 'Memo / tag'}: ${intent.memo}` : '',
-  ].filter(Boolean).join('\n');
 
   return <div className="payment-instruction ea-page-payment">
     <div className="payment-amount">
@@ -90,8 +84,6 @@ function PaymentInstruction({ intent, qr, walletConnectProjectId, rtl, busy, onI
       <div className="ea-payment-destination"><span>{intent.memo ? (rtl ? '4. المبلغ الدقيق' : '4. Exact amount') : (rtl ? '3. المبلغ الدقيق' : '3. Exact amount')}</span><code>{intent.cryptoAmount} {intent.asset}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.cryptoAmount, rtl ? 'المبلغ الدقيق' : 'Exact amount')}>{rtl ? 'نسخ المبلغ' : 'Copy amount'}</button></div>
       <div className="alert alert-warning">{rtl ? 'يجب أن يكون المبلغ المستلم بعد رسوم السحب مساوياً تماماً للمبلغ أعلاه.' : 'The amount received after withdrawal fees must equal the exact amount shown above.'}</div>
     </section>}
-
-    {!submitted && channel !== 'choose' && <button type="button" className="dark-button ea-copy-instruction" onClick={() => onCopy(summary, rtl ? 'ملخص الدفع' : 'Payment summary')}><Icon name="shield" size={16}/>{rtl ? 'نسخ ملخص الدفع' : 'Copy payment summary'}</button>}
 
     <dl><div><dt>{rtl ? 'القيمة بالدرهم' : 'AED reference'}</dt><dd>{money(intent.fiatAmount)}</dd></div><div><dt>{rtl ? 'سعر التحويل' : 'Locked quote'}</dt><dd>{intent.quoteRate}</dd></div><div><dt>{rtl ? 'ينتهي' : 'Expires'}</dt><dd>{date(intent.expiresAt)}</dd></div></dl>
     {intent.status === 'confirmed' ? <a className="red-button ea-receipt-link" href={`/api/v1/payment/intents/${intent.id}/receipt.pdf`} download>{rtl ? 'تنزيل إيصال الدفع' : 'Download confirmed receipt'}</a> : !submitted && channel !== 'choose' && <button type="button" className="red-button ea-reported-payment" disabled={busy} onClick={onReport}>{busy ? (rtl ? 'جارٍ الإبلاغ…' : 'Reporting…') : (rtl ? 'دفعت يدوياً — إبلاغ الدعم' : 'Paid manually — notify support')}</button>}
