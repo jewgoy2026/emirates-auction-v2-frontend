@@ -14,19 +14,21 @@
     "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
+    "@walletconnect/modal": "2.7.0",
+    "@walletconnect/universal-provider": "2.26.0",
     "next": "16.4.5",
     "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "latest",
     "@types/node": "24.10.0",
     "@types/qrcode": "^1.5.5",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "tsx": "^4.20.6",
     "typescript": "5.9.3",
-    "wrangler": "4.158.0",
-    "@cloudflare/workers-types": "latest"
+    "wrangler": "4.158.0"
   }
 }
