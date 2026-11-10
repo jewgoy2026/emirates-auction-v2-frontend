@@ -153,3 +153,36 @@ footer{color:#d6d7da;background:#121315}.footer-grid{display:grid;grid-template-
 .ea-page-payment .ea-transfer-heading{gap:10px;padding:0 0 11px}.ea-page-payment .ea-transfer-heading>span{width:38px;height:38px;border-radius:11px;background:#fff1f3;color:var(--ea-red)}.ea-page-payment .ea-transfer-heading strong{font-size:13px}.ea-page-payment .ea-transfer-heading p{font-size:9px}
 .ea-page-payment .ea-whatsapp-payment{min-height:44px;border-radius:9px;background:linear-gradient(135deg,#1da75d,#128047);font-size:11px;box-shadow:0 9px 22px rgba(22,138,75,.23)}.ea-page-payment .ea-whatsapp-payment svg{width:19px;height:19px}
 @media(max-width:620px){.ea-page-payment .ea-transfer-heading{gap:8px;padding-bottom:7px}.ea-page-payment .ea-transfer-heading>span{width:30px;height:30px;border-radius:8px}.ea-page-payment .ea-transfer-heading strong{font-size:11px}.ea-page-payment .ea-transfer-heading p{margin-top:1px;font-size:7.5px}.ea-page-payment .ea-whatsapp-payment{min-height:38px;padding:7px 8px;border-radius:7px;font-size:9px}.ea-page-payment .ea-whatsapp-payment svg{width:16px;height:16px}}
+
+/* Resilient mobile sizing: keep the complete transfer action in one useful viewport. */
+@media(max-width:620px){
+  .ea-payment-instruction-page>.ea-content-wrap,.ea-payment-instruction-layout,.ea-payment-instruction-layout>.ea-checkout-card,.ea-page-payment,.ea-payment-hero-copy,.ea-transfer-main,.ea-transfer-actions,.ea-address-row>div,.ea-compact-destination{min-width:0}
+  .ea-payment-instruction-page>.ea-content-wrap{width:min(calc(100% - 14px),430px)}
+  .ea-payment-instruction-page .ea-checkout-title h1{font-size:clamp(21px,6.1vw,25px)}
+  .ea-payment-hero{grid-template-columns:clamp(40px,11.5vw,46px) minmax(0,1fr);gap:clamp(8px,2.5vw,12px);padding:clamp(9px,2.8vw,12px)}
+  .ea-payment-hero-copy strong{font-size:clamp(17px,5.35vw,22px);line-height:1.05;overflow-wrap:anywhere}
+  .ea-page-payment>.ea-payment-open-panel{padding-inline:clamp(8px,2.7vw,12px)}
+  .ea-network-row{grid-template-columns:minmax(0,1fr) auto}.ea-network-row code{white-space:nowrap}
+  .ea-address-row>div{grid-template-columns:minmax(0,1fr) clamp(44px,13vw,54px)}.ea-address-row code{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ea-address-row .ea-copy-payment{min-width:44px;min-height:34px}
+  .ea-transfer-main{grid-template-columns:clamp(108px,34vw,132px) minmax(0,1fr);gap:clamp(6px,2vw,9px)}
+  .ea-transfer-main .ea-address-qr{align-content:center;width:100%;padding:clamp(5px,1.7vw,7px)}.ea-transfer-main .ea-address-qr img{width:100%;height:auto;aspect-ratio:1;object-fit:contain}
+  .ea-transfer-actions{grid-template-rows:auto auto minmax(40px,1fr)}
+  .ea-compact-destination code{max-width:100%;padding-inline-end:clamp(34px,10vw,42px);font-size:clamp(8px,2.45vw,10px);line-height:1.2;white-space:normal;overflow-wrap:anywhere}
+  .ea-compact-destination>.ea-copy-payment{min-width:32px;min-height:27px}
+  .ea-transfer-warning{font-size:clamp(6.6px,1.9vw,7.5px)}
+  .ea-page-payment .ea-whatsapp-payment{min-height:42px;padding-inline:clamp(6px,2vw,10px);font-size:clamp(8px,2.35vw,10px);line-height:1.15;white-space:normal}
+  .ea-page-payment>dl>div{min-width:0}.ea-page-payment>dl dd{font-size:clamp(7px,2.05vw,8.5px)}
+}
+@media(max-width:350px){
+  .ea-payment-instruction-page>.ea-content-wrap{width:calc(100% - 8px)}
+  .ea-payment-instruction-page .ea-checkout-title{padding-bottom:7px}.ea-payment-instruction-page .ea-checkout-title h1{font-size:20px}
+  .ea-page-payment .ea-transfer-heading>span{display:none}.ea-page-payment .ea-transfer-heading p{font-size:7px}.ea-transfer-heading>b{font-size:6px}
+  .ea-transfer-main{grid-template-columns:104px minmax(0,1fr)}
+  .ea-transfer-footnote{display:none}
+  .ea-page-payment>dl{margin-inline:8px!important}.ea-page-payment>dl>div{padding:5px!important}.ea-page-payment>.secure-note{margin-inline:8px}
+}
+@media(max-width:620px) and (max-height:700px){
+  .ea-payment-instruction-page .ea-checkout-back{padding-block:4px}.ea-payment-instruction-page .ea-checkout-title{padding-bottom:6px}
+  .ea-transfer-footnote,.ea-page-payment>.secure-note{display:none}
+  .ea-page-payment>dl{margin-bottom:8px!important}
+}
