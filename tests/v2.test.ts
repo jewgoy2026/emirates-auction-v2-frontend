@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aedMinor, normalizeIntent, normalizeLot, requiredDeposit } from '../lib/v2.ts';
+import { aedMinor, normalizeIntent, normalizeLot, paymentAddressQrValue, requiredDeposit } from '../lib/v2.ts';
 
 test('AED input stays in integer minor units', () => {
   assert.equal(aedMinor('5000'), 500_000);
@@ -35,4 +35,6 @@ test('payment normalization preserves the server-owned atomic amount as text', (
   });
   assert.equal(intent.walletRequest?.amountAtomic, atomic);
   assert.equal(intent.walletRequest?.transaction.data, '0xa9059cbb');
+  assert.equal(paymentAddressQrValue(intent), intent.address);
+  assert.equal(paymentAddressQrValue(intent).includes(intent.cryptoAmount), false);
 });

@@ -2,8 +2,7 @@
 
 import QRCode from 'qrcode';
 import { FormEvent, MouseEvent, ReactNode, useEffect, useMemo, useState } from 'react';
-import { Account, Category, DirectOrder, Invoice, Lot, PaymentIntent, Rail, User, Withdrawal, aedMinor, api, date, money, normalizeAccount, normalizeCategory, normalizeDirectOrder, normalizeIntent, normalizeLot, normalizeWithdrawal, remaining } from '../../lib/v2';
-import WalletPaymentPanel from './wallet-payment-panel';
+import { Account, Category, DirectOrder, Invoice, Lot, PaymentIntent, Rail, User, Withdrawal, aedMinor, api, date, money, normalizeAccount, normalizeCategory, normalizeDirectOrder, normalizeIntent, normalizeLot, normalizeWithdrawal, paymentAddressQrValue, remaining } from '../../lib/v2';
 import PaymentRailPicker, { CryptoIconStack, CryptoRailIcon } from './payment-rail-picker';
 
 type IconName = 'account' | 'arrow' | 'bell' | 'bid' | 'calendar' | 'car' | 'clock' | 'close' | 'filter' | 'gavel' | 'grid' | 'heart' | 'menu' | 'money' | 'phone' | 'search' | 'shield' | 'sort' | 'wallet';
@@ -33,64 +32,53 @@ function Icon({ name, size = 21 }: { name: IconName; size?: number }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" width={size} height={size}>{paths[name]}</svg>;
 }
 
-function PaymentInstruction({ intent, qr, walletConnectProjectId, rtl, busy, onIntent, onCopy, onReport }: {
+function WhatsAppMark() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 2a9.7 9.7 0 0 0-8.4 14.6L2 22l5.6-1.5A9.9 9.9 0 1 0 12 2Zm0 17.8a7.8 7.8 0 0 1-4-1.1l-.3-.2-3.3.9.9-3.2-.2-.3A7.8 7.8 0 1 1 12 19.8Zm4.3-5.8c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1l-.7.9c-.1.2-.3.2-.5.1-1.4-.7-2.3-1.3-3.2-2.9-.2-.3.2-.3.6-1.1.1-.2 0-.4 0-.5l-.7-1.7c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-1 1-1 2.4s1 2.7 1.1 2.9c.1.2 2 3.1 4.9 4.3 1.8.8 2.5.8 3.4.7 1-.1 1.4-.7 1.6-1.3.2-.6.2-1.1.1-1.2-.2-.2-.4-.2-.6-.3Z"/></svg>;
+}
+
+function PaymentInstruction({ intent, qr, rtl, busy, onCopy, onReport }: {
   intent: PaymentIntent;
   qr: string;
-  walletConnectProjectId: string;
   rtl: boolean;
   busy: boolean;
-  onIntent: (intent: PaymentIntent) => void;
   onCopy: (value: string, label: string) => void;
   onReport: () => void;
 }) {
-  const [channel, setChannel] = useState<'choose' | 'wallet' | 'exchange'>('choose');
   const submitted = Boolean(intent.txHash) || ['confirming', 'confirmed', 'amount_mismatch', 'failed', 'expired'].includes(intent.status);
-  const family = intent.walletRequest?.family ?? '';
+  const unsuccessful = ['amount_mismatch', 'failed', 'expired'].includes(intent.status);
+  const statusTitle = intent.status === 'confirmed' ? (rtl ? 'تم تأكيد الدفع' : 'Payment confirmed')
+    : intent.status === 'amount_mismatch' ? (rtl ? 'القيمة المستلمة لا تطابق الطلب' : 'Received amount does not match')
+      : unsuccessful ? (rtl ? 'تعذر إكمال هذه الدفعة' : 'This payment could not be completed')
+        : (rtl ? 'تم العثور على التحويل' : 'Transfer detected');
+  const statusText = intent.status === 'confirmed' ? (rtl ? 'تمت مطابقة التحويل وإصدار الإيصال.' : 'The transfer was matched and your receipt is ready.')
+    : unsuccessful ? (rtl ? 'تواصل مع الدعم قبل إجراء تحويل آخر.' : 'Contact support before making another transfer.')
+      : (rtl ? 'نحن ننتظر تأكيد الشبكة. لا ترسل دفعة أخرى.' : 'We are waiting for network confirmation. Do not send another payment.');
 
   return <div className="payment-instruction ea-page-payment">
     <div className="payment-amount">
       <CryptoRailIcon asset={intent.asset} network={intent.network}/>
-      <span className="ea-fixed-amount-badge"><Icon name="shield" size={13}/>{rtl ? 'مبلغ ثابت' : 'Fixed amount'}</span>
-      <span>{rtl ? 'ستدفع بالضبط' : 'You will pay exactly'}</span>
+      <span className="ea-fixed-amount-badge"><Icon name="shield" size={13}/>{rtl ? 'تحويل يدوي' : 'Manual transfer'}</span>
+      <span>{rtl ? 'المبلغ المطلوب إرساله' : 'Amount to send'}</span>
       <strong>{intent.cryptoAmount} {intent.asset}</strong>
       <small>{intent.network} · {intent.standard}</small>
     </div>
 
-    {!submitted && channel === 'choose' && <section className="ea-payment-channel-picker" aria-label={rtl ? 'اختر طريقة الدفع' : 'Choose payment method'}>
-      <header><strong>{rtl ? 'كيف تريد الدفع؟' : 'How would you like to pay?'}</strong><p>{rtl ? 'اختر محفظة Web3 أو التحويل من صرافة قبل المتابعة.' : 'Choose a Web3 wallet or an exchange transfer before continuing.'}</p></header>
-      <div>
-        <button type="button" onClick={() => setChannel('wallet')}><Icon name="wallet" size={25}/><span><strong>{rtl ? 'محفظة / Web3' : 'Wallet / Web3'}</strong><small>{rtl ? 'اتصل بمحفظة متوافقة أو امسح QR' : 'Connect a compatible wallet or scan QR'}</small></span><b>›</b></button>
-        <button type="button" onClick={() => setChannel('exchange')}><Icon name="grid" size={25}/><span><strong>{rtl ? 'صرافة' : 'Exchange'}</strong><small>{rtl ? 'Binance أو OKX أو Bybit أو غيرها' : 'Binance, OKX, Bybit or another exchange'}</small></span><b>›</b></button>
-      </div>
-    </section>}
-
-    {!submitted && channel !== 'choose' && <button type="button" className="ea-change-payment-channel" onClick={() => setChannel('choose')}>‹ {rtl ? 'تغيير طريقة الدفع' : 'Change payment method'}</button>}
-
-    {(submitted || channel === 'wallet') && <>
-      <WalletPaymentPanel intent={intent} walletConnectProjectId={walletConnectProjectId} rtl={rtl} onIntent={onIntent}/>
-      {!submitted && family !== 'tron' && <section className="ea-qr-fallback ea-payment-open-panel">
-        <strong>{family === 'bitcoin' ? (rtl ? 'امسح أو انسخ طلب Bitcoin' : 'Scan or copy the Bitcoin request') : (rtl ? 'امسح من داخل محفظة متوافقة' : 'Scan from a compatible wallet')}</strong>
-        {qr && <img src={qr} alt={rtl ? 'رمز QR للدفع بالمبلغ الثابت' : 'Fixed-amount crypto payment QR code'}/>}
-        <p>{family === 'bitcoin'
-          ? (rtl ? 'يحتوي الطلب على عنوان Bitcoin والمبلغ الدقيق المحدد مسبقاً.' : 'The request includes the Bitcoin address and the exact prefilled amount.')
-          : (rtl ? 'يحتوي رمز QR على الشبكة والمستلم والمبلغ المحدد. لا تلصقه في خانة عنوان الصرافة.' : 'The QR contains the network, recipient and fixed amount. Do not paste it into an exchange address field.')}</p>
-        {family === 'bitcoin' && intent.paymentUri.startsWith('bitcoin:') && <button type="button" className="text-button ea-copy-request" onClick={() => onCopy(intent.paymentUri, rtl ? 'طلب Bitcoin' : 'Bitcoin payment code')}>{rtl ? 'نسخ طلب Bitcoin بالمبلغ' : 'Copy Bitcoin request with amount'}</button>}
-      </section>}
-    </>}
-
-    {!submitted && channel === 'exchange' && <section className="ea-manual-transfer ea-payment-open-panel">
-      <strong>{rtl ? 'التحويل من صرافة' : 'Transfer from an exchange'}</strong>
-      <p className="ea-exchange-note">{rtl ? 'في Binance أو OKX أو Bybit، اختر السحب، ثم انسخ كل حقل أدناه في مكانه. تحقق من الشبكة والمبلغ قبل التأكيد.' : 'In Binance, OKX or Bybit, choose Withdraw, then copy each field below into its matching field. Verify the network and amount before confirming.'}</p>
+    {!submitted ? <section className="ea-manual-transfer ea-payment-open-panel">
+      <div className="ea-transfer-heading"><span><Icon name="grid" size={24}/></span><div><strong>{rtl ? 'تحويل عملة رقمية' : 'Crypto transfer'}</strong><p>{rtl ? 'أرسل من أي محفظة أو صرافة أو تطبيق عملات رقمية.' : 'Send from any wallet, exchange or crypto app.'}</p></div></div>
       <div className="ea-payment-destination"><span>{rtl ? '1. شبكة السحب' : '1. Withdrawal network'}</span><code>{intent.network} · {intent.standard}</code></div>
-      <div className="ea-payment-destination"><span>{rtl ? '2. محفظة الاستلام' : '2. Receiving wallet'}</span><code>{intent.address}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.address, rtl ? 'العنوان' : 'Address')}>{rtl ? 'نسخ العنوان' : 'Copy address'}</button></div>
+      <div className="ea-payment-destination"><span>{rtl ? '2. عنوان الاستلام' : '2. Receiving address'}</span><code>{intent.address}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.address, rtl ? 'العنوان' : 'Address')}>{rtl ? 'نسخ العنوان' : 'Copy address'}</button></div>
+      {qr && <div className="ea-address-qr"><img src={qr} alt={rtl ? 'رمز QR لعنوان الاستلام' : 'Receiving address QR code'}/><small>{rtl ? 'يحتوي رمز QR على عنوان الاستلام فقط. اختر الشبكة وأدخل المبلغ يدوياً.' : 'The QR contains only the receiving address. Select the network and enter the amount manually.'}</small></div>}
       {intent.memo && <div className="ea-payment-destination"><span>{rtl ? '3. مذكرة / وسم' : '3. Memo / destination tag'}</span><code>{intent.memo}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.memo, rtl ? 'الوسم' : 'Memo / tag')}>{rtl ? 'نسخ الوسم' : 'Copy memo / tag'}</button></div>}
-      <div className="ea-payment-destination"><span>{intent.memo ? (rtl ? '4. المبلغ الدقيق' : '4. Exact amount') : (rtl ? '3. المبلغ الدقيق' : '3. Exact amount')}</span><code>{intent.cryptoAmount} {intent.asset}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.cryptoAmount, rtl ? 'المبلغ الدقيق' : 'Exact amount')}>{rtl ? 'نسخ المبلغ' : 'Copy amount'}</button></div>
+      <div className="ea-payment-destination"><span>{intent.memo ? (rtl ? '4. المبلغ المطلوب' : '4. Amount to send') : (rtl ? '3. المبلغ المطلوب' : '3. Amount to send')}</span><code>{intent.cryptoAmount} {intent.asset}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.cryptoAmount, rtl ? 'المبلغ' : 'Amount')}>{rtl ? 'نسخ المبلغ' : 'Copy amount'}</button></div>
       <div className="alert alert-warning">{rtl ? 'يجب أن يكون المبلغ المستلم بعد رسوم السحب مساوياً تماماً للمبلغ أعلاه.' : 'The amount received after withdrawal fees must equal the exact amount shown above.'}</div>
+      <button type="button" className="ea-whatsapp-payment" disabled={busy} onClick={onReport}><WhatsAppMark/><span>{busy ? (rtl ? 'جارٍ فتح واتساب…' : 'Opening WhatsApp…') : (rtl ? 'لقد دفعت — استلام الإيصال' : "I've paid — receive receipt")}</span></button>
+    </section> : <section className={`ea-wallet-connect ea-wallet-submitted ${intent.status === 'confirmed' ? 'confirmed' : ''} ${unsuccessful ? 'mismatch' : ''}`} aria-live="polite">
+      <span className="ea-wallet-state-icon">{intent.status === 'confirmed' ? '✓' : unsuccessful ? '!' : '•••'}</span><div><strong>{statusTitle}</strong><p>{statusText}</p>{intent.txHash && <code>{intent.txHash}</code>}</div>
     </section>}
 
     <dl><div><dt>{rtl ? 'القيمة بالدرهم' : 'AED reference'}</dt><dd>{money(intent.fiatAmount)}</dd></div><div><dt>{rtl ? 'سعر التحويل' : 'Locked quote'}</dt><dd>{intent.quoteRate}</dd></div><div><dt>{rtl ? 'ينتهي' : 'Expires'}</dt><dd>{date(intent.expiresAt)}</dd></div></dl>
-    {intent.status === 'confirmed' ? <a className="red-button ea-receipt-link" href={`/api/v1/payment/intents/${intent.id}/receipt.pdf`} download>{rtl ? 'تنزيل إيصال الدفع' : 'Download confirmed receipt'}</a> : !submitted && channel !== 'choose' && <button type="button" className="red-button ea-reported-payment" disabled={busy} onClick={onReport}>{busy ? (rtl ? 'جارٍ الإبلاغ…' : 'Reporting…') : (rtl ? 'دفعت يدوياً — إبلاغ الدعم' : 'Paid manually — notify support')}</button>}
-    <p className="secure-note"><Icon name="shield" size={18}/>{rtl ? 'لا يتم اعتماد أي مبلغ بناءً على الإبلاغ. يجب أن يطابق المستمع الشبكة والمستلم والرمز والقيمة الكاملة.' : 'Reporting never credits funds. The listener must match network, recipient, token and the full exact amount.'}</p>
+    {intent.status === 'confirmed' && <a className="red-button ea-receipt-link" href={`/api/v1/payment/intents/${intent.id}/receipt.pdf`} download>{rtl ? 'تنزيل إيصال الدفع' : 'Download confirmed receipt'}</a>}
+    <p className="secure-note"><Icon name="shield" size={18}/>{rtl ? 'سيصدر الإيصال بعد تأكيد الشبكة ومطابقة التحويل.' : 'Your receipt is issued after network confirmation and transfer matching.'}</p>
   </div>;
 }
 
@@ -336,7 +324,7 @@ function resetPageScroll() {
 export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage?: Language }) {
   const language = initialLanguage, rtl = language === 'ar', t = copy[language];
   const [categories, setCategories] = useState<Category[]>([]), [lots, setLots] = useState<Lot[]>([]), [rails, setRails] = useState<Rail[]>([]);
-  const [supportWhatsapp,setSupportWhatsapp]=useState(''),[walletConnectProjectId,setWalletConnectProjectId]=useState('');
+  const [supportWhatsapp,setSupportWhatsapp]=useState('');
   const [v1Home, setV1Home] = useState<V1HomeSnapshot | null>(null);
   const [platePreview, setPlatePreview] = useState<PlatePreviewSnapshot | null>(null), [plateCarLot, setPlateCarLot] = useState<Lot | null>(null), [plateMakeId, setPlateMakeId] = useState(0), [plateModelId, setPlateModelId] = useState(''), [plateLoading, setPlateLoading] = useState(false), [plateDownloading, setPlateDownloading] = useState(false);
   const [user, setUser] = useState<User | null>(null), [account, setAccount] = useState<Account | null>(null);
@@ -352,7 +340,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   const [menuOpen, setMenuOpen] = useState(false), [searchOpen, setSearchOpen] = useState(false), [activeFaq, setActiveFaq] = useState(0), [activeSell, setActiveSell] = useState(0), [activeStoryYear, setActiveStoryYear] = useState('');
 
   async function loadPublic() {
-    const paymentConfigRequest=api<{support:{whatsappNumber:string};enabledRails:string[];walletConnectProjectId?:string}>('/v1/payment/config').catch(()=>({support:{whatsappNumber:''},enabledRails:[],walletConnectProjectId:''}));
+    const paymentConfigRequest=api<{support:{whatsappNumber:string};enabledRails:string[]}>('/v1/payment/config').catch(()=>({support:{whatsappNumber:''},enabledRails:[]}));
     const homeRequest = fetch('/snapshot/v1-home.json', { cache: 'no-store' }).then(async (response) => {
       if (!response.ok) throw new Error('V1 homepage snapshot is unavailable.');
       return response.json() as Promise<V1HomeSnapshot>;
@@ -379,7 +367,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
     }
     const paymentConfig=await paymentConfigRequest;
     const enabledRails=new Set(paymentConfig.enabledRails);
-    setCategories(categoryData.items.map(normalizeCategory)); setLots(catalogData.items.map(normalizeLot)); setRails(railData.rails.map((rail)=>({...rail,enabled:enabledRails.has(`${rail.asset}\u0000${rail.network}`)})));setSupportWhatsapp(String(paymentConfig.support.whatsappNumber??'').replace(/\D/g,''));setWalletConnectProjectId(String(paymentConfig.walletConnectProjectId??''));
+    setCategories(categoryData.items.map(normalizeCategory)); setLots(catalogData.items.map(normalizeLot)); setRails(railData.rails.map((rail)=>({...rail,enabled:enabledRails.has(`${rail.asset}\u0000${rail.network}`)})));setSupportWhatsapp(String(paymentConfig.support.whatsappNumber??'').replace(/\D/g,''));
   }
   async function loadAccount() { const data = await api('/v1/auction/me'); setAccount(normalizeAccount(data)); }
   async function restore() { try { const data = await api<{user: User}>('/v1/auth/me', { retry: false }); setUser(data.user); await loadAccount(); } catch {} }
@@ -387,7 +375,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 5000); return () => clearTimeout(timer); }, [notice]);
   useEffect(() => { try { setPreferredRailKey(localStorage.getItem('ea-preferred-payment-rail') ?? ''); } catch {} }, []);
-  useEffect(() => { if (!intent?.paymentUri) { setQr(''); return; } QRCode.toDataURL(intent.paymentUri, { width: 260, margin: 1, errorCorrectionLevel: 'M', color: { dark: '#161719', light: '#ffffff' } }).then(setQr).catch(() => setQr('')); }, [intent]);
+  useEffect(() => { if (!intent?.address) { setQr(''); return; } QRCode.toDataURL(paymentAddressQrValue(intent), { width: 260, margin: 1, errorCorrectionLevel: 'M', color: { dark: '#161719', light: '#ffffff' } }).then(setQr).catch(() => setQr('')); }, [intent]);
   useEffect(()=>{
     if(!intent||!['pending','confirming','underpaid'].includes(intent.status))return;
     const poll=setInterval(()=>{api<{intent:unknown}>(`/v1/payment/intents/${intent.id}`).then((data)=>{const updated=normalizeIntent(data.intent);setIntent(updated);if(updated.status==='confirmed'){setNotice(rtl?'تم تأكيد الدفع على الشبكة.':'Payment confirmed on-chain.');void loadAccount();}}).catch(()=>null);},8000);
@@ -587,11 +575,11 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
     try{
       await api(`/v1/payment/intents/${intent.id}/reported`,{body:{}});
       const summary=[
-        'Emirates Auction - payment reported',`Reference: ${intent.id}`,`AED: ${money(intent.fiatAmount)}`,`Crypto: ${intent.cryptoAmount} ${intent.asset}`,`Network: ${intent.network} (${intent.standard})`,`Status: awaiting on-chain confirmation`,user?`Customer: ${user.name} | ${user.email} | ${user.phone}`:'',
+        'Emirates Auction - receipt request','I have completed the crypto transfer and would like to receive my receipt after confirmation.',`Reference: ${intent.id}`,`AED: ${money(intent.fiatAmount)}`,`Crypto: ${intent.cryptoAmount} ${intent.asset}`,`Network: ${intent.network} (${intent.standard})`,`Status: awaiting on-chain confirmation`,user?`Customer: ${user.name} | ${user.email} | ${user.phone}`:'',
       ].filter(Boolean).join('\n');
       if(supportWindow&&supportWhatsapp){supportWindow.opener=null;supportWindow.location.href=`https://wa.me/${supportWhatsapp}?text=${encodeURIComponent(summary)}`;}
       else if(supportWindow)supportWindow.close();
-      setNotice(rtl?'تم إبلاغ فريق الدعم. سيبقى الدفع قيد الانتظار حتى تأكيد الشبكة.':'Support was notified. Payment remains pending until on-chain confirmation.');
+      setNotice(rtl?'تم فتح واتساب. سيصدر الإيصال بعد تأكيد الشبكة.':'WhatsApp opened. Your receipt will be issued after network confirmation.');
     }catch(reason){supportWindow?.close();setError(reason instanceof Error?reason.message:'The payment report could not be sent.');}
     finally{setBusy(false);}
   }
@@ -827,7 +815,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
         {paymentFor!=='funds'&&<div className="ea-payment-total"><span>{rtl?'المبلغ المستحق الآن':'Amount due now'}</span><strong>{money('kind' in paymentFor ? paymentFor.kind==='direct' ? paymentFor.order.total : paymentFor.shortfall : paymentFor.due)}</strong>{'kind' in paymentFor&&paymentFor.kind!=='direct'?<small>{rtl?`حد المزايدة ${money(paymentFor.targetBidAmount)} · التأمين المطلوب ${money(paymentFor.requiredCollateral)}`:`Bidding limit ${money(paymentFor.targetBidAmount)} · Required deposit ${money(paymentFor.requiredCollateral)}`}</small>:<small>{rtl?'شامل الرسوم المطبقة':'Includes applicable fees'}</small>}</div>}
         <PaymentRailPicker rails={rails} selectedIndex={recommendedRailIndex} rtl={rtl} onSelect={rail=>{const key=`${rail.asset}:${rail.network}`;setPreferredRailKey(key);try{localStorage.setItem('ea-preferred-payment-rail',key);}catch{}}}/>
         {error&&<div className="alert alert-error" role="alert">{error}</div>}<button className="red-button ea-lock-payment" disabled={busy||!rails.some((rail)=>rail.enabled!==false)}>{busy?(rtl?'جارٍ تجهيز الدفع…':'Preparing payment…'):(rtl?'متابعة إلى الدفع':'Continue to payment')} <Icon name="arrow" size={17}/></button><p className="secure-note"><Icon name="shield" size={15}/>{rtl?'راجع المبلغ الدقيق قبل تأكيد الدفع في محفظتك.':'Review the exact amount before confirming in your wallet.'}</p>
-      </form>:<PaymentInstruction key={intent.id} intent={intent} qr={qr} walletConnectProjectId={walletConnectProjectId} rtl={rtl} busy={busy} onIntent={(updated)=>{setIntent(updated);setNotice(rtl?'تم ربط المعاملة. ننتظر تأكيد الشبكة.':'Transaction linked. Waiting for network confirmation.');}} onCopy={(value,label)=>{void copyPaymentValue(value,label);}} onReport={()=>{void reportPayment();}}/>}</>}</section><aside className="ea-checkout-summary"><Icon name="shield" size={30}/><h2>{rtl?'تعليمات محمية':'Protected instruction'}</h2><p>{rtl?'تنطبق نفس آلية التثبيت والتحقق على ضمان المزايدة والشراء المباشر وتسوية العنصر الفائز وجميع الرسوم.' :'The same locked-value verification applies to bid collateral, direct purchase, winning-lot settlement and every platform charge.'}</p>{intent&&<dl><div><dt>AED</dt><dd>{money(intent.fiatAmount)}</dd></div><div><dt>{rtl?'القيمة الدقيقة':'Exact crypto'}</dt><dd>{intent.cryptoAmount} {intent.asset}</dd></div><div><dt>{rtl?'الحالة':'Status'}</dt><dd>{intent.status}</dd></div></dl>}</aside></div>
+      </form>:<PaymentInstruction key={intent.id} intent={intent} qr={qr} rtl={rtl} busy={busy} onCopy={(value,label)=>{void copyPaymentValue(value,label);}} onReport={()=>{void reportPayment();}}/>}</>}</section><aside className="ea-checkout-summary"><Icon name="shield" size={30}/><h2>{rtl?'تعليمات محمية':'Protected instruction'}</h2><p>{rtl?'تنطبق نفس آلية التثبيت والتحقق على ضمان المزايدة والشراء المباشر وتسوية العنصر الفائز وجميع الرسوم.' :'The same locked-value verification applies to bid collateral, direct purchase, winning-lot settlement and every platform charge.'}</p>{intent&&<dl><div><dt>AED</dt><dd>{money(intent.fiatAmount)}</dd></div><div><dt>{rtl?'القيمة الدقيقة':'Exact crypto'}</dt><dd>{intent.cryptoAmount} {intent.asset}</dd></div><div><dt>{rtl?'الحالة':'Status'}</dt><dd>{intent.status}</dd></div></dl>}</aside></div>
     </div></main>}
 
     <footer className="ea-footer" id="contact"><div className="ea-content-wrap"><div className="ea-footer-links"><section><h3>{t.footerAbout}</h3><a href="#about">{t.about}</a><a href="#story">{t.storyTitle}</a><a href="#news">{t.newsTitle}</a><a href="#contact">{t.findUs}</a></section><section><h3>{t.footerAuctions}</h3>{categories.slice(0,7).map((category)=><a href="#categories" key={category.id}>{localizedCategory(category.title,language)}</a>)}</section><section><h3>{t.footerHelp}</h3><a href="#faq">{t.help}</a><a href="#faq">{rtl?'الأسئلة الشائعة':'FAQ'}</a><a href="#contact">{t.contact}</a></section><section><h3>{t.footerQuick}</h3><a href="#sell">{t.sell}</a><a href="#categories">{t.requestPlate}</a><a href="#categories">{t.requestPackage}</a></section><section className="ea-help-card"><h3>{t.available247}</h3><p>UAE 600 545 454</p><p>support@emiratesauction.com</p></section></div><div className="ea-footer-social"><div><h3>{t.contact}</h3><p>{rtl?'تابعنا واكتشف أكبر منصة مزادات في المنطقة.':'Follow our channels and discover the region’s trusted auction marketplace.'}</p></div><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/></div></div><div className="ea-footer-bottom"><div className="ea-content-wrap"><span>© {new Date().getFullYear()} {t.copyright}</span><span>{rtl?'الدرهم الإماراتي · التسوية بالعملات الرقمية':'AED · Crypto settlement rails'}</span><a href={rtl?'/' : '/ar'}>{rtl?'English':'العربية'}</a></div></div></footer>
