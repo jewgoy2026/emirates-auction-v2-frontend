@@ -36,11 +36,14 @@ function WhatsAppMark() {
   return <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 2a9.7 9.7 0 0 0-8.4 14.6L2 22l5.6-1.5A9.9 9.9 0 1 0 12 2Zm0 17.8a7.8 7.8 0 0 1-4-1.1l-.3-.2-3.3.9.9-3.2-.2-.3A7.8 7.8 0 1 1 12 19.8Zm4.3-5.8c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1l-.7.9c-.1.2-.3.2-.5.1-1.4-.7-2.3-1.3-3.2-2.9-.2-.3.2-.3.6-1.1.1-.2 0-.4 0-.5l-.7-1.7c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-1 1-1 2.4s1 2.7 1.1 2.9c.1.2 2 3.1 4.9 4.3 1.8.8 2.5.8 3.4.7 1-.1 1.4-.7 1.6-1.3.2-.6.2-1.1.1-1.2-.2-.2-.4-.2-.6-.3Z"/></svg>;
 }
 
-function PaymentInstruction({ intent, qr, rtl, busy, onCopy, onReport }: {
+type PaymentContextSummary = { kind: string; title: string; detail: string };
+
+function PaymentInstruction({ intent, qr, rtl, busy, summary, onCopy, onReport }: {
   intent: PaymentIntent;
   qr: string;
   rtl: boolean;
   busy: boolean;
+  summary: PaymentContextSummary;
   onCopy: (value: string, label: string) => void;
   onReport: () => void;
 }) {
@@ -67,6 +70,7 @@ function PaymentInstruction({ intent, qr, rtl, busy, onCopy, onReport }: {
 
     {!submitted ? <section className="ea-manual-transfer ea-payment-open-panel">
       <div className="ea-transfer-heading"><span><Icon name="wallet" size={23}/></span><div><strong>{rtl ? 'أرسل من أي تطبيق' : 'Pay from any crypto app'}</strong><p>{rtl ? 'محفظة أو صرافة أو تطبيق عملات رقمية.' : 'Wallet, exchange or crypto app — all work here.'}</p></div><b>{rtl ? 'جاهز' : 'Ready'}</b></div>
+      <div className="ea-payment-context"><span><Icon name="gavel" size={16}/>{summary.kind}</span><div><strong>{summary.title}</strong><small>{summary.detail}</small></div><Icon name="shield" size={18}/></div>
       <div className="ea-payment-destination ea-network-row"><span><i>1</i>{rtl ? 'شبكة السحب' : 'Withdrawal network'}</span><code>{intent.network} · {intent.standard}</code></div>
       <div className="ea-payment-destination ea-address-row"><span><i>2</i>{rtl ? 'عنوان الاستلام' : 'Receiving address'}</span><div><code>{intent.address}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.address, rtl ? 'العنوان' : 'Address')}>{rtl ? 'نسخ' : 'Copy'}</button></div></div>
       <div className="ea-transfer-main">
@@ -75,7 +79,7 @@ function PaymentInstruction({ intent, qr, rtl, busy, onCopy, onReport }: {
           {intent.memo && <div className="ea-payment-destination ea-compact-destination"><span>{rtl ? 'مذكرة / وسم' : 'Memo / tag'}</span><code>{intent.memo}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.memo, rtl ? 'الوسم' : 'Memo / tag')}>{rtl ? 'نسخ' : 'Copy'}</button></div>}
           <div className="ea-payment-destination ea-compact-destination"><span><i>{intent.memo ? '4' : '3'}</i>{rtl ? 'المبلغ الدقيق' : 'Exact amount'}</span><code>{intent.cryptoAmount} {intent.asset}</code><button type="button" className="text-button ea-copy-payment" onClick={() => onCopy(intent.cryptoAmount, rtl ? 'المبلغ' : 'Amount')}>{rtl ? 'نسخ' : 'Copy'}</button></div>
           <div className="ea-transfer-warning"><Icon name="shield" size={15}/><span>{rtl ? 'أرسل المبلغ الدقيق بعد خصم رسوم السحب.' : 'Send the exact amount after withdrawal fees.'}</span></div>
-          <button type="button" className="ea-whatsapp-payment" disabled={busy} onClick={onReport}><WhatsAppMark/><span>{busy ? (rtl ? 'جارٍ فتح واتساب…' : 'Opening WhatsApp…') : (rtl ? 'لقد دفعت — استلام الإيصال' : "I've paid — get my receipt")}</span></button>
+          <button type="button" className="ea-whatsapp-payment" disabled={busy} onClick={onReport}><WhatsAppMark/><span><b>{busy ? (rtl ? 'جارٍ فتح واتساب…' : 'Opening WhatsApp…') : (rtl ? 'لقد دفعت — استلام الإيصال' : "I've paid — get my receipt")}</b>{!busy&&<small>{rtl ? 'إرسال ملخص الدفع عبر واتساب' : 'Send payment summary on WhatsApp'}</small>}</span></button>
         </div>
       </div>
       <p className="ea-transfer-footnote">{rtl ? 'يحتوي رمز QR على عنوان الاستلام فقط. اختر الشبكة وأدخل المبلغ يدوياً.' : 'QR contains the receiving address only. Choose the network and enter the amount manually.'}</p>
@@ -511,6 +515,18 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
   const securityLot=securityLotId?lotById.get(securityLotId)??null:null,securityRateBps=securityLot?.depositBps||2000,securityMinimum=securityLot?.minimumLimit||1_500_000,securityLimitMinor=Math.round(Number(securityLimit)*100),securityMinimumDeposit=Math.max(securityLot?.minimumDeposit??0,Math.ceil(securityMinimum*securityRateBps/10_000)),securityDepositMinor=Math.max(securityLot?.minimumDeposit??0,Math.ceil(securityLimitMinor*securityRateBps/10_000)),securityTooLow=!Number.isFinite(securityLimitMinor)||securityLimitMinor<securityMinimum;
   const securityPlate=securityLot?plateMeta(securityLot,platePreview):null;
   const directLot=directOrder?lotById.get(directOrder.lotId)??null:null,directIsPlate=Boolean(directOrder?.lotCategory.endsWith(' Plates')),directPlate=directLot?plateMeta(directLot,platePreview):null;
+  const paymentSummary:PaymentContextSummary=(()=>{
+    if(paymentFor==='funds')return{kind:rtl?'إضافة رصيد':'Balance top-up',title:rtl?'رصيد الحساب العام':'General account balance',detail:rtl?'رصيد متاح للمزادات والمشتريات':'Available for auctions and purchases'};
+    if(paymentFor&&'kind'in paymentFor){
+      if(paymentFor.kind==='direct')return{kind:rtl?'شراء مباشر':'Direct purchase',title:paymentFor.order.lotTitle,detail:`${paymentFor.order.lotCategory} · ${money(paymentFor.order.total)}`};
+      const lot=paymentFor.lotId?lotById.get(paymentFor.lotId):null;
+      return paymentFor.kind==='bid'
+        ?{kind:rtl?'تأمين مزايدة':'Bid collateral',title:lot?.title??(rtl?'عنصر مزاد':'Auction lot'),detail:rtl?`تأمين لمزايدة بقيمة ${money(paymentFor.targetBidAmount)}`:`Collateral for a ${money(paymentFor.targetBidAmount)} bid`}
+        :{kind:rtl?'حد المزايدة':'Bidding limit deposit',title:lot?.title??(rtl?'كل المزادات المؤهلة':'All eligible auctions'),detail:rtl?`حد المزايدة المستهدف ${money(paymentFor.targetBidAmount)}`:`Target bidding limit ${money(paymentFor.targetBidAmount)}`};
+    }
+    if(paymentFor){const lot=lotById.get(paymentFor.lotId);return{kind:rtl?'تسوية مزاد':'Auction win',title:lot?.title??(rtl?'عنصر فائز':'Winning lot'),detail:rtl?`تسوية العنصر الفائز · ${money(paymentFor.due)}`:`Winning-lot settlement · ${money(paymentFor.due)}`};}
+    return{kind:rtl?'دفع بالعملة الرقمية':'Crypto payment',title:rtl?'جلسة دفع آمنة':'Secure payment session',detail:rtl?'تعليمات دفع محمية':'Protected payment instruction'};
+  })();
   const selectedDescriptionItems=selectedLot?(()=>{const imported=Array.isArray(selectedLot.detailData.descriptionItems)?selectedLot.detailData.descriptionItems.map(String).map((item)=>item.trim()).filter(Boolean):[];return imported.length?imported:lotDescriptionItems(selectedLot.description||sourceDescription);})():[];
   const selectedTerms=selectedLot?lotTermItems(selectedLot.detailData.terms):[],hasAdministrativeFees=selectedTerms.some((item)=>/administrative fee plus vat/i.test(item));
 
@@ -582,7 +598,18 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
     try{
       await api(`/v1/payment/intents/${intent.id}/reported`,{body:{}});
       const summary=[
-        'Emirates Auction - receipt request','I have completed the crypto transfer and would like to receive my receipt after confirmation.',`Reference: ${intent.id}`,`AED: ${money(intent.fiatAmount)}`,`Crypto: ${intent.cryptoAmount} ${intent.asset}`,`Network: ${intent.network} (${intent.standard})`,`Status: awaiting on-chain confirmation`,user?`Customer: ${user.name} | ${user.email} | ${user.phone}`:'',
+        'Emirates Auction — payment confirmation & receipt request',
+        'I have completed the crypto transfer. Please confirm it and send my receipt.',
+        `Payment type: ${paymentSummary.kind}`,
+        `Item / purpose: ${paymentSummary.title}`,
+        `Summary: ${paymentSummary.detail}`,
+        `Payment reference: ${intent.id}`,
+        `AED reference: ${money(intent.fiatAmount)}`,
+        `Amount sent: ${intent.cryptoAmount} ${intent.asset}`,
+        `Network: ${intent.network} (${intent.standard})`,
+        intent.memo?`Memo / tag: ${intent.memo}`:'',
+        `Status: awaiting on-chain confirmation`,
+        user?`Customer: ${user.name} | ${user.email} | ${user.phone}`:'',
       ].filter(Boolean).join('\n');
       if(supportWindow&&supportWhatsapp){supportWindow.opener=null;supportWindow.location.href=`https://wa.me/${supportWhatsapp}?text=${encodeURIComponent(summary)}`;}
       else if(supportWindow)supportWindow.close();
@@ -822,7 +849,7 @@ export default function PublicSite({ initialLanguage = 'en' }: { initialLanguage
         {paymentFor!=='funds'&&<div className="ea-payment-total"><span>{rtl?'المبلغ المستحق الآن':'Amount due now'}</span><strong>{money('kind' in paymentFor ? paymentFor.kind==='direct' ? paymentFor.order.total : paymentFor.shortfall : paymentFor.due)}</strong>{'kind' in paymentFor&&paymentFor.kind!=='direct'?<small>{rtl?`حد المزايدة ${money(paymentFor.targetBidAmount)} · التأمين المطلوب ${money(paymentFor.requiredCollateral)}`:`Bidding limit ${money(paymentFor.targetBidAmount)} · Required deposit ${money(paymentFor.requiredCollateral)}`}</small>:<small>{rtl?'شامل الرسوم المطبقة':'Includes applicable fees'}</small>}</div>}
         <PaymentRailPicker rails={rails} selectedIndex={recommendedRailIndex} rtl={rtl} onSelect={rail=>{const key=`${rail.asset}:${rail.network}`;setPreferredRailKey(key);try{localStorage.setItem('ea-preferred-payment-rail',key);}catch{}}}/>
         {error&&<div className="alert alert-error" role="alert">{error}</div>}<button className="red-button ea-lock-payment" disabled={busy||!rails.some((rail)=>rail.enabled!==false)}>{busy?(rtl?'جارٍ تجهيز الدفع…':'Preparing payment…'):(rtl?'متابعة إلى الدفع':'Continue to payment')} <Icon name="arrow" size={17}/></button><p className="secure-note"><Icon name="shield" size={15}/>{rtl?'راجع المبلغ الدقيق قبل تأكيد الدفع في محفظتك.':'Review the exact amount before confirming in your wallet.'}</p>
-      </form>:<PaymentInstruction key={intent.id} intent={intent} qr={qr} rtl={rtl} busy={busy} onCopy={(value,label)=>{void copyPaymentValue(value,label);}} onReport={()=>{void reportPayment();}}/>}</>}</section><aside className="ea-checkout-summary"><Icon name="shield" size={30}/><h2>{rtl?'تعليمات محمية':'Protected instruction'}</h2><p>{rtl?'تنطبق نفس آلية التثبيت والتحقق على ضمان المزايدة والشراء المباشر وتسوية العنصر الفائز وجميع الرسوم.' :'The same locked-value verification applies to bid collateral, direct purchase, winning-lot settlement and every platform charge.'}</p>{intent&&<dl><div><dt>AED</dt><dd>{money(intent.fiatAmount)}</dd></div><div><dt>{rtl?'القيمة الدقيقة':'Exact crypto'}</dt><dd>{intent.cryptoAmount} {intent.asset}</dd></div><div><dt>{rtl?'الحالة':'Status'}</dt><dd>{intent.status}</dd></div></dl>}</aside></div>
+      </form>:<PaymentInstruction key={intent.id} intent={intent} qr={qr} rtl={rtl} busy={busy} summary={paymentSummary} onCopy={(value,label)=>{void copyPaymentValue(value,label);}} onReport={()=>{void reportPayment();}}/>}</>}</section><aside className="ea-checkout-summary"><Icon name="shield" size={30}/><h2>{rtl?'تعليمات محمية':'Protected instruction'}</h2><p>{rtl?'تنطبق نفس آلية التثبيت والتحقق على ضمان المزايدة والشراء المباشر وتسوية العنصر الفائز وجميع الرسوم.' :'The same locked-value verification applies to bid collateral, direct purchase, winning-lot settlement and every platform charge.'}</p>{intent&&<dl><div><dt>AED</dt><dd>{money(intent.fiatAmount)}</dd></div><div><dt>{rtl?'القيمة الدقيقة':'Exact crypto'}</dt><dd>{intent.cryptoAmount} {intent.asset}</dd></div><div><dt>{rtl?'الحالة':'Status'}</dt><dd>{intent.status}</dd></div></dl>}</aside></div>
     </div></main>}
 
     <footer className="ea-footer" id="contact"><div className="ea-content-wrap"><div className="ea-footer-links"><section><h3>{t.footerAbout}</h3><a href="#about">{t.about}</a><a href="#story">{t.storyTitle}</a><a href="#news">{t.newsTitle}</a><a href="#contact">{t.findUs}</a></section><section><h3>{t.footerAuctions}</h3>{categories.slice(0,7).map((category)=><a href="#categories" key={category.id}>{localizedCategory(category.title,language)}</a>)}</section><section><h3>{t.footerHelp}</h3><a href="#faq">{t.help}</a><a href="#faq">{rtl?'الأسئلة الشائعة':'FAQ'}</a><a href="#contact">{t.contact}</a></section><section><h3>{t.footerQuick}</h3><a href="#sell">{t.sell}</a><a href="#categories">{t.requestPlate}</a><a href="#categories">{t.requestPackage}</a></section><section className="ea-help-card"><h3>{t.available247}</h3><p>UAE 600 545 454</p><p>support@emiratesauction.com</p></section></div><div className="ea-footer-social"><div><h3>{t.contact}</h3><p>{rtl?'تابعنا واكتشف أكبر منصة مزادات في المنطقة.':'Follow our channels and discover the region’s trusted auction marketplace.'}</p></div><img src="/emirates-auction-logo.svg" alt={t.emiratesAuction}/></div></div><div className="ea-footer-bottom"><div className="ea-content-wrap"><span>© {new Date().getFullYear()} {t.copyright}</span><span>{rtl?'الدرهم الإماراتي · التسوية بالعملات الرقمية':'AED · Crypto settlement rails'}</span><a href={rtl?'/' : '/ar'}>{rtl?'English':'العربية'}</a></div></div></footer>
