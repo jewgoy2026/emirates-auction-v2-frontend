@@ -127,16 +127,16 @@ footer{color:#d6d7da;background:#121315}.footer-grid{display:grid;grid-template-
   .ea-page-payment{gap:0;max-width:none}
   .ea-payment-hero{grid-template-columns:44px minmax(0,1fr);gap:11px;padding:10px 12px}.ea-payment-hero>.ea-crypto-rail-icon{width:42px;height:42px;min-width:42px}.ea-payment-hero>.ea-crypto-rail-icon .ea-crypto-asset{width:39px;height:39px}.ea-payment-hero>.ea-crypto-rail-icon .ea-crypto-network{width:18px;height:18px}.ea-payment-hero .ea-fixed-amount-badge{margin-bottom:3px;padding:3px 6px;font-size:7px!important}.ea-payment-hero-copy>span:not(.ea-fixed-amount-badge){font-size:8px}.ea-payment-hero-copy strong{margin:1px 0;font-size:20px;letter-spacing:-.3px}.ea-payment-hero-copy small{font-size:8px}
   .ea-page-payment>.ea-payment-open-panel{gap:7px;padding:9px 10px 8px}
-  .ea-transfer-heading{gap:8px;padding-bottom:7px}.ea-transfer-heading>span{width:30px;height:30px;border-radius:8px}.ea-transfer-heading>span svg{width:18px}.ea-transfer-heading strong{font-size:11px}.ea-transfer-heading p{margin-top:1px;font-size:7px}.ea-transfer-heading>b{padding:4px 6px;font-size:6px}
-  .ea-network-row{padding:5px 7px}.ea-payment-destination>span{gap:5px;font-size:7px}.ea-payment-destination>span>i{width:15px;height:15px;font-size:7px}.ea-network-row code{font-size:8px}
-  .ea-address-row{gap:4px}.ea-address-row code{padding:7px 8px;font-size:8px}.ea-address-row .ea-copy-payment{min-width:48px;min-height:0;padding:0 7px!important;font-size:7px!important}
-  .ea-transfer-main{grid-template-columns:126px minmax(0,1fr);gap:7px}.ea-transfer-main .ea-address-qr{gap:1px;padding:6px;border-radius:8px;box-shadow:inset 0 0 0 3px #f7f8f9}.ea-transfer-main .ea-address-qr img{width:112px}.ea-transfer-main .ea-address-qr small{font-size:6px}
-  .ea-transfer-actions{gap:5px}.ea-compact-destination{gap:3px;padding:6px 7px;border-radius:7px}.ea-compact-destination code{padding-inline-end:37px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ea-compact-destination>.ea-copy-payment{inset-inline-end:5px;bottom:5px;min-height:20px;padding:2px 5px!important;font-size:6px!important}
-  .ea-transfer-warning{gap:4px;padding:5px 6px;border-radius:6px;font-size:6.5px}.ea-transfer-warning svg{width:12px;height:12px}
-  .ea-whatsapp-payment{min-height:38px;padding:7px 8px;border-radius:7px;font-size:8.5px}.ea-whatsapp-payment svg{width:16px;height:16px}
-  .ea-transfer-footnote{font-size:6.5px}
-  .ea-page-payment>dl{margin:7px 10px 0!important}.ea-page-payment>dl>div{padding:6px 7px!important}.ea-page-payment>dl dt{font-size:6.5px}.ea-page-payment>dl dd{font-size:7.5px;line-height:1.25}
-  .ea-page-payment>.secure-note{margin:6px 10px 9px;font-size:7px;line-height:1.3}.ea-page-payment>.secure-note svg{width:12px;height:12px;flex:0 0 auto}
+  .ea-transfer-heading{gap:8px;padding-bottom:7px}.ea-transfer-heading>span{width:30px;height:30px;border-radius:8px}.ea-transfer-heading>span svg{width:18px}.ea-transfer-heading strong{font-size:11px}.ea-transfer-heading p{margin-top:1px;font-size:7.5px}.ea-transfer-heading>b{padding:4px 6px;font-size:6.5px}
+  .ea-network-row{padding:5px 7px}.ea-payment-destination>span{gap:5px;font-size:7.5px}.ea-payment-destination>span>i{width:15px;height:15px;font-size:7px}.ea-network-row code{font-size:8.5px}
+  .ea-address-row{gap:4px}.ea-address-row code{padding:7px 8px;font-size:8.5px}.ea-address-row .ea-copy-payment{min-width:48px;min-height:0;padding:0 7px!important;font-size:7.5px!important}
+  .ea-transfer-main{grid-template-columns:126px minmax(0,1fr);gap:7px}.ea-transfer-main .ea-address-qr{gap:1px;padding:6px;border-radius:8px;box-shadow:inset 0 0 0 3px #f7f8f9}.ea-transfer-main .ea-address-qr img{width:112px}.ea-transfer-main .ea-address-qr small{font-size:6.5px}
+  .ea-transfer-actions{gap:5px}.ea-compact-destination{gap:3px;padding:6px 7px;border-radius:7px}.ea-compact-destination code{padding-inline-end:37px;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ea-compact-destination>.ea-copy-payment{inset-inline-end:5px;bottom:5px;min-height:20px;padding:2px 5px!important;font-size:6.5px!important}
+  .ea-transfer-warning{gap:4px;padding:5px 6px;border-radius:6px;font-size:7px}.ea-transfer-warning svg{width:12px;height:12px}
+  .ea-whatsapp-payment{min-height:38px;padding:7px 8px;border-radius:7px;font-size:9px}.ea-whatsapp-payment svg{width:16px;height:16px}
+  .ea-transfer-footnote{font-size:7px}
+  .ea-page-payment>dl{margin:7px 10px 0!important}.ea-page-payment>dl>div{padding:6px 7px!important}.ea-page-payment>dl dt{font-size:7px}.ea-page-payment>dl dd{font-size:8px;line-height:1.25}
+  .ea-page-payment>.secure-note{margin:6px 10px 9px;font-size:7.5px;line-height:1.3}.ea-page-payment>.secure-note svg{width:12px;height:12px;flex:0 0 auto}
 }
 
 /* Exact-value crypto checkout: rail choice, connected wallets and listener state. */
@@ -152,4 +152,4 @@ footer{color:#d6d7da;background:#121315}.footer-grid{display:grid;grid-template-
 .ea-payment-hero>.ea-crypto-rail-icon{margin:0}
 .ea-page-payment .ea-transfer-heading{gap:10px;padding:0 0 11px}.ea-page-payment .ea-transfer-heading>span{width:38px;height:38px;border-radius:11px;background:#fff1f3;color:var(--ea-red)}.ea-page-payment .ea-transfer-heading strong{font-size:13px}.ea-page-payment .ea-transfer-heading p{font-size:9px}
 .ea-page-payment .ea-whatsapp-payment{min-height:44px;border-radius:9px;background:linear-gradient(135deg,#1da75d,#128047);font-size:11px;box-shadow:0 9px 22px rgba(22,138,75,.23)}.ea-page-payment .ea-whatsapp-payment svg{width:19px;height:19px}
-@media(max-width:620px){.ea-page-payment .ea-transfer-heading{gap:8px;padding-bottom:7px}.ea-page-payment .ea-transfer-heading>span{width:30px;height:30px;border-radius:8px}.ea-page-payment .ea-transfer-heading strong{font-size:11px}.ea-page-payment .ea-transfer-heading p{margin-top:1px;font-size:7px}.ea-page-payment .ea-whatsapp-payment{min-height:38px;padding:7px 8px;border-radius:7px;font-size:8.5px}.ea-page-payment .ea-whatsapp-payment svg{width:16px;height:16px}}
+@media(max-width:620px){.ea-page-payment .ea-transfer-heading{gap:8px;padding-bottom:7px}.ea-page-payment .ea-transfer-heading>span{width:30px;height:30px;border-radius:8px}.ea-page-payment .ea-transfer-heading strong{font-size:11px}.ea-page-payment .ea-transfer-heading p{margin-top:1px;font-size:7.5px}.ea-page-payment .ea-whatsapp-payment{min-height:38px;padding:7px 8px;border-radius:7px;font-size:9px}.ea-page-payment .ea-whatsapp-payment svg{width:16px;height:16px}}
