@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aedMinor, normalizeIntent, normalizeLot, paymentAddressQrValue, requiredDeposit } from '../lib/v2.ts';
+import { aedMinor, date, normalizeIntent, normalizeLot, paymentAddressQrValue, requiredDeposit } from '../lib/v2.ts';
+
+test('auction timestamps are always displayed in Dubai time', () => {
+  const formatted = date(Date.parse('2026-11-05T12:00:00.000Z'));
+  assert.match(formatted, /4:00\s*PM/i);
+  assert.match(formatted, /GST \(UTC\+4\)$/);
+});
 
 test('AED input stays in integer minor units', () => {
   assert.equal(aedMinor('5000'), 500_000);
